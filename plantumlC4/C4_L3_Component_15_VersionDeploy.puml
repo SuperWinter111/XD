@@ -1,0 +1,73 @@
+@startuml C4_L3_Component_15_VersionDeploy
+!include <C4/C4_Component>
+
+title 版本与部署管理分系统 - C4 Level 3 组件图
+caption 运维保障层 / 版本与部署管理分系统
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+' ============================================================
+' 外部依赖
+' ============================================================
+
+Person(sysAdmin, "系统管理员", "版本发布与部署")
+Person(devTester, "开发/测试人员", "代码构建与部署")
+Container(hmi, "人机交互分系统", "Web前端/GIS引擎", "版本/部署管理界面")
+Container(opsMgmt, "运维管理分系统", "运维服务", "配置/流程协同")
+ContainerDb(dbMgmt, "数据库管理分系统", "数据库集群", "版本/部署数据")
+Container(monitorLog, "监控与日志分系统", "监控服务", "部署监控")
+
+' ============================================================
+' 版本与部署管理分系统边界
+' ============================================================
+
+Container_Boundary(versionDeploy, "版本与部署管理分系统") {
+
+    Component(versionMgmt, "版本管理模块", "版本控制", "软硬件版本管理\n产品/组件编号与批次\n组件更换记录\n升级记录\n版本基线管理")
+
+    Component(rollback, "回滚处理模块", "回滚引擎", "版本回滚策略\n快速回滚执行\n回滚影响评估\n回滚记录管理")
+
+    Component(releaseProcess, "发布流程管理模块", "发布管理", "发布计划管理\n发布审批流程\n灰度发布管理\n发布验证检查")
+
+    Component(cicd, "CI/CD模块", "CI/CD流水线", "持续集成流水线\n持续部署流水线\n自动化构建\n自动化测试\n部署环境管理")
+
+    Component(depMgmt, "依赖管理模块", "依赖分析", "组件依赖关系管理\n版本兼容性检查\n依赖冲突检测\n第三方组件管理")
+
+    Component(envDetect, "运行环境检测模块", "环境检测", "运行环境自动检测\n环境兼容性验证\n环境差异对比\n环境基线管理")
+}
+
+' ============================================================
+' 外部关系
+' ============================================================
+
+Rel_D(sysAdmin, hmi, "版本发布操作")
+Rel_D(devTester, hmi, "构建部署操作")
+Rel_D(hmi, releaseProcess, "发布审批操作", "REST API")
+Rel_D(hmi, versionMgmt, "版本管理操作", "REST API")
+Rel_D(hmi, cicd, "CI/CD操作", "REST API")
+
+' ============================================================
+' 内部模块交互
+' ============================================================
+
+Rel_R(versionMgmt, depMgmt, "版本→依赖检查")
+Rel_D(releaseProcess, cicd, "发布计划→触发CI/CD")
+Rel_D(cicd, envDetect, "部署前→环境检测")
+Rel_R(releaseProcess, rollback, "发布失败→回滚")
+Rel_R(rollback, versionMgmt, "回滚→版本切换")
+Rel_D(depMgmt, envDetect, "依赖→环境兼容检查")
+
+' ============================================================
+' 对外部容器
+' ============================================================
+
+Rel_D(cicd, opsMgmt, "触发运维配置变更", "API")
+Rel_D(envDetect, monitorLog, "上报环境检测结果")
+
+Rel_D(versionMgmt, dbMgmt, "读写版本数据", "SQL")
+Rel_D(releaseProcess, dbMgmt, "读写发布记录", "SQL")
+Rel_D(rollback, dbMgmt, "读写回滚记录", "SQL")
+Rel_D(depMgmt, dbMgmt, "读写依赖数据", "SQL")
+
+@enduml

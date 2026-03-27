@@ -1,0 +1,12 @@
+{
+  "trace_id": "trace-formal09-boundary-001",
+  "schema_version": "formal09.v1",
+  "event_time": "2026-03-23T11:25:00Z",
+  "source_id": "simulation.truth",
+  "topic": "target_truth",
+  "target_truth": {
+    "truth_id": "truth-001",
+    "target_id": "sim-target-01"
+  },
+  "boundary_rule": "TargetTruth is simulation-origin truth data and must not be treated as SitMgmt fused authoritative track output."
+}

@@ -1,0 +1,13 @@
+{
+  "trace_id": "trace-formal07-boundary-001",
+  "schema_version": "formal07.v1",
+  "event_time": "2026-03-23T10:50:00Z",
+  "source_id": "commnet.monitor",
+  "topic": "link_degraded",
+  "degradation_alert": {
+    "link_id": "link-003",
+    "severity": "MEDIUM",
+    "trigger_threshold": "latency_gt_200ms"
+  },
+  "boundary_rule": "DegradationAlert is an event signal and must not be treated as the long-lived authoritative link state object."
+}

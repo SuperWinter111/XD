@@ -1,0 +1,141 @@
+@startuml Code_06_MsgService
+title BMS系统 - Code Diagram 06 数据交换与消息服务分系统
+
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "主题治理与接入层" as governanceLayer {
+    class TopicRegistryService
+    class SchemaCatalogService
+    class PublisherAdmissionService
+    class SubscriberAdmissionService
+    class TopicPolicyResolver
+    class MessageEnvelopeBuilder
+
+    TopicRegistryService --> SchemaCatalogService
+    TopicRegistryService --> TopicPolicyResolver
+    PublisherAdmissionService --> TopicRegistryService
+    SubscriberAdmissionService --> TopicRegistryService
+    MessageEnvelopeBuilder --> SchemaCatalogService
+}
+
+package "总线与路由层" as busLayer {
+    class MessageBusCore
+    class TopicRouter
+    class RoutingRuleEngine
+    class FanoutDispatchService
+    class SelectiveDeliveryService
+    class PullSubscriptionService
+
+    MessageBusCore --> TopicRouter
+    TopicRouter --> RoutingRuleEngine
+    TopicRouter --> FanoutDispatchService
+    TopicRouter --> SelectiveDeliveryService
+    TopicRouter --> PullSubscriptionService
+}
+
+package "格式转换与契约适配层" as convertLayer {
+    class FormatConversionService
+    class CodecAdapterFactory
+    class JsonCodecAdapter
+    class ProtoCodecAdapter
+    class BinaryCodecAdapter
+    class FieldMappingService
+    class ContractVersionResolver
+
+    CodecAdapterFactory --> JsonCodecAdapter
+    CodecAdapterFactory --> ProtoCodecAdapter
+    CodecAdapterFactory --> BinaryCodecAdapter
+    FormatConversionService --> CodecAdapterFactory
+    FormatConversionService --> FieldMappingService
+    FormatConversionService --> ContractVersionResolver
+}
+
+package "可靠性与流控层" as reliabilityLayer {
+    class DeliveryGuaranteeService
+    class AckTracker
+    class RetryCoordinator
+    class IdempotencyGuard
+    class OrderingGuard
+    class DeadLetterQueueService
+    class BackpressureController
+    class RateLimitService
+    class PriorityQueueService
+
+    DeliveryGuaranteeService --> AckTracker
+    DeliveryGuaranteeService --> RetryCoordinator
+    DeliveryGuaranteeService --> IdempotencyGuard
+    DeliveryGuaranteeService --> OrderingGuard
+    DeliveryGuaranteeService --> DeadLetterQueueService
+    BackpressureController --> RateLimitService
+    BackpressureController --> PriorityQueueService
+}
+
+package "观测与运维支撑层" as observabilityLayer {
+    class MessageMetricsCollector
+    class QueueLagMonitor
+    class ReliabilityAlertService
+    class TraceCorrelationService
+    class AuditEventPublisher
+
+    MessageMetricsCollector --> QueueLagMonitor
+    QueueLagMonitor --> ReliabilityAlertService
+    TraceCorrelationService --> AuditEventPublisher
+}
+
+package "领域对象" as domainLayer {
+    class TopicDefinition
+    class SchemaDescriptor
+    class MessageEnvelope
+    class RoutingDecision
+    class SubscriptionBinding
+    class DeliveryReceipt
+    class RetryTask
+    class DeadLetterRecord
+    class FlowControlPolicy
+    class MessageMetricSnapshot
+}
+
+TopicRegistryService --> TopicDefinition
+SchemaCatalogService --> SchemaDescriptor
+MessageEnvelopeBuilder --> MessageEnvelope
+RoutingRuleEngine --> RoutingDecision
+SubscriberAdmissionService --> SubscriptionBinding
+AckTracker --> DeliveryReceipt
+RetryCoordinator --> RetryTask
+DeadLetterQueueService --> DeadLetterRecord
+RateLimitService --> FlowControlPolicy
+MessageMetricsCollector --> MessageMetricSnapshot
+
+PublisherAdmissionService --> MessageBusCore : admitted publisher
+SubscriberAdmissionService --> MessageBusCore : admitted subscriber
+MessageEnvelopeBuilder --> FormatConversionService : normalize payload
+FormatConversionService --> MessageBusCore : converted envelope
+MessageBusCore --> DeliveryGuaranteeService : delivery control
+MessageBusCore --> BackpressureController : flow control
+TopicPolicyResolver --> RoutingRuleEngine : qos and route policy
+TopicRouter --> MessageMetricsCollector : throughput and fanout metrics
+DeliveryGuaranteeService --> ReliabilityAlertService : retry/dead-letter alert
+TraceCorrelationService --> MessageEnvelopeBuilder : trace_id propagation
+MessageMetricsCollector --> AuditEventPublisher : bus metrics event
+DeadLetterQueueService --> AuditEventPublisher : dead-letter event
+
+note right of TopicRegistryService
+主题、schema、QoS 与访问策略统一由消息服务治理。
+业务分系统只声明要发布或订阅什么，不直接操纵总线内部策略。
+end note
+
+note right of FormatConversionService
+负责消息标准化与契约版本兼容。
+不改变任务、态势、资源、计划等业务对象的原始语义，只做载体适配。
+end note
+
+note bottom of DeliveryGuaranteeService
+统一保障确认、重发、幂等、顺序与死信处理。
+用于支撑 DDS/消息代理混合场景下的可靠交付语义。
+end note
+
+@enduml

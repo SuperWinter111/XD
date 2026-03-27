@@ -1,0 +1,19 @@
+{
+  "trace_id": "trace-formal04-boundary-001",
+  "schema_version": "formal04.v1",
+  "event_time": "2026-03-23T10:10:00Z",
+  "source_id": "sitmgmt.assessment",
+  "topic": "threat_assessed",
+  "threat_assessment": {
+    "assessment_id": "ta-003",
+    "threat_level": "MEDIUM",
+    "reasons": [
+      "speed_above_threshold"
+    ]
+  },
+  "forbidden_fields": {
+    "battle_command": null,
+    "platform_command": null
+  },
+  "boundary_rule": "ThreatAssessment is analysis output only and must not directly carry command intent."
+}

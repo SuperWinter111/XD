@@ -1,0 +1,25 @@
+{
+  "trace_id": "trace-formal04-abnormal-001",
+  "schema_version": "formal04.v1",
+  "event_time": "2026-03-23T10:05:00Z",
+  "source_id": "sitmgmt.fusion",
+  "topic": "threat_assessed",
+  "fused_track": {
+    "track_id": "trk-002",
+    "target_id": "target-002",
+    "confidence": 0.41,
+    "position": {
+      "lat": 31.228,
+      "lon": 121.472,
+      "alt_m": 2800
+    }
+  },
+  "threat_assessment": {
+    "assessment_id": "ta-002",
+    "threat_level": "DEGRADED",
+    "reasons": [
+      "observation_insufficient",
+      "low_confidence_track"
+    ]
+  }
+}

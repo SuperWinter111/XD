@@ -1,0 +1,152 @@
+@startuml Code_04_SitMgmt
+title BMS系统 - Code Diagram 04 态势管理分系统
+
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "数据接入与预处理层" as ingestLayer {
+    class SituationIngestFacade
+    class ExternalSituationAdapter
+    class EdgePerceptionAdapter
+    class DataQualityAssessor
+    class TimestampAlignmentService
+    class DeduplicationService
+    class CredibilityScoringService
+    class EncodingNormalizationService
+
+    SituationIngestFacade --> ExternalSituationAdapter
+    SituationIngestFacade --> EdgePerceptionAdapter
+    SituationIngestFacade --> DataQualityAssessor
+    DataQualityAssessor --> TimestampAlignmentService
+    DataQualityAssessor --> DeduplicationService
+    DataQualityAssessor --> CredibilityScoringService
+    DataQualityAssessor --> EncodingNormalizationService
+}
+
+package "信息提取与融合层" as fusionLayer {
+    class ImageInfoExtractor
+    class TextIntelExtractor
+    class StructuredDataExtractor
+    class SpatioTemporalConsistencyChecker
+    class TrackAssociationService
+    class AttributeFusionService
+    class ConflictResolutionService
+    class FalseTargetFilter
+    class TrackLifecycleManager
+
+    ImageInfoExtractor --> SpatioTemporalConsistencyChecker
+    TextIntelExtractor --> SpatioTemporalConsistencyChecker
+    StructuredDataExtractor --> SpatioTemporalConsistencyChecker
+    TrackAssociationService --> AttributeFusionService
+    AttributeFusionService --> ConflictResolutionService
+    AttributeFusionService --> FalseTargetFilter
+    TrackAssociationService --> TrackLifecycleManager
+}
+
+package "分析与推理层" as analysisLayer {
+    class ThreatAssessmentService
+    class ThreatPriorityRanker
+    class EnvironmentAnalysisService
+    class BattlefieldSituationAnalyzer
+    class SituationReasoningService
+    class IntentPredictionService
+    class EvolutionSimulationService
+    class ConfidenceEstimator
+
+    ThreatAssessmentService --> ThreatPriorityRanker
+    SituationReasoningService --> IntentPredictionService
+    SituationReasoningService --> EvolutionSimulationService
+    SituationReasoningService --> ConfidenceEstimator
+}
+
+package "监控告警与简报层" as alertLayer {
+    class SituationMonitoringService
+    class CriticalEventDetector
+    class AlertGenerationService
+    class SituationSnapshotBuilder
+    class SummaryReportService
+    class ReplayIndexBuilder
+
+    SituationMonitoringService --> CriticalEventDetector
+    SituationMonitoringService --> AlertGenerationService
+    SituationMonitoringService --> SituationSnapshotBuilder
+    SummaryReportService --> ReplayIndexBuilder
+}
+
+package "集成与持久化层" as integrationLayer {
+    class KnowledgeFeatureGateway
+    class SituationEventPublisher
+    class ThreatEventPublisher
+    class HmiPushGateway
+    class SuperiorReportGateway
+    class TrackRepository
+    class SituationSnapshotRepository
+    class ReportRepository
+}
+
+package "领域对象" as domainLayer {
+    class RawTargetInput
+    class SituationDatum
+    class CredibilityScore
+    class FusedTrack
+    class ThreatAssessment
+    class EnvironmentSnapshot
+    class SituationPicture
+    class InferenceResult
+    class CriticalAlert
+    class SituationSnapshot
+    class SituationSummaryReport
+}
+
+EncodingNormalizationService --> RawTargetInput
+DataQualityAssessor --> SituationDatum
+CredibilityScoringService --> CredibilityScore
+AttributeFusionService --> FusedTrack
+ThreatAssessmentService --> ThreatAssessment
+EnvironmentAnalysisService --> EnvironmentSnapshot
+BattlefieldSituationAnalyzer --> SituationPicture
+SituationReasoningService --> InferenceResult
+AlertGenerationService --> CriticalAlert
+SituationSnapshotBuilder --> SituationSnapshot
+SummaryReportService --> SituationSummaryReport
+
+EncodingNormalizationService --> ImageInfoExtractor : normalized image/meta
+EncodingNormalizationService --> TextIntelExtractor : normalized text intel
+EncodingNormalizationService --> StructuredDataExtractor : normalized structured data
+SpatioTemporalConsistencyChecker --> TrackAssociationService : validated observations
+TrackAssociationService --> ThreatAssessmentService : fused tracks
+AttributeFusionService --> BattlefieldSituationAnalyzer : fused situation
+EnvironmentAnalysisService --> BattlefieldSituationAnalyzer : environment factors
+BattlefieldSituationAnalyzer --> SituationReasoningService : situation picture
+ThreatAssessmentService --> SituationMonitoringService : threat updates
+SituationReasoningService --> SituationMonitoringService : inferred events
+TrackLifecycleManager --> TrackRepository : persist fused tracks
+SituationSnapshotBuilder --> SituationSnapshotRepository : persist snapshots
+SummaryReportService --> ReportRepository : persist summary
+AttributeFusionService --> KnowledgeFeatureGateway : query target features
+ThreatAssessmentService --> KnowledgeFeatureGateway : query threat rules
+SituationMonitoringService --> SituationEventPublisher : situation changes
+ThreatAssessmentService --> ThreatEventPublisher : threat alerts
+SituationMonitoringService --> HmiPushGateway : push situation and alerts
+SummaryReportService --> SuperiorReportGateway : publish situation summary
+SummaryReportService --> SituationEventPublisher : summary generated
+
+note right of TrackAssociationService
+负责把边缘感知、外部态势和历史航迹合并为统一融合航迹。
+这里产出的是态势语义对象，不进入任务或计划语义。
+end note
+
+note right of SituationReasoningService
+基于融合态势做意图预测、趋势推演和置信度评估。
+可为 BattleCtrl 提供态势上下文，但不直接生成交战计划。
+end note
+
+note bottom of SituationMonitoringService
+统一输出三类结果：
+实时态势推送、关键告警、态势简报/回放索引。
+end note
+
+@enduml

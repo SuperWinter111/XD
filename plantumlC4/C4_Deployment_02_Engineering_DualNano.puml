@@ -1,0 +1,80 @@
+@startuml C4_Deployment_02_Engineering_DualNano
+!include <C4/C4_Deployment>
+
+title BMS系统 - Deployment View 02 工程应用双 Nano 部署
+caption 工程应用条件下采用双板部署，边缘板负责协同增强与设备接入，核心板负责业务、数据与人机交互；两板通过 DDS 与受控同步接口协同
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+HIDE_STEREOTYPE()
+
+Person(operator, "业务使用人员", "使用本地或远端 HMI")
+System_Ext(superiorCmd, "上级指控系统", "指令/态势交互")
+System_Ext(uavSystem, "无人平台任务系统", "工程阶段由地面站/任务系统/实机平台共同构成")
+
+Deployment_Node(coreNano, "Nano-Core 核心功能板", "NVIDIA Jetson Nano", "承载系统主体功能") {
+    Container(frontend, "HMI前端", "Nginx + Vue 3", "系统操作界面")
+    Container(apiGateway, "API Gateway / BFF", "Gateway Service", "统一入口")
+    Container(extInterface, "外部接口管理分系统", "Backend Service", "上级/横向/前后接口")
+    Container(taskMgmt, "任务管理分系统", "Backend Service", "任务解析、方案生成")
+    Container(sitMgmt, "态势管理分系统", "Backend Service", "融合、推理、告警")
+    Container(battleCtrl, "交战管控分系统", "Backend Service", "交战规划与执行监控")
+    Container(resMgmt, "资源管理分系统", "Backend Service", "资源注册与调度")
+    Container(knowledgeRule, "知识与规则管理分系统", "Backend Service", "规则与模板")
+    Container(authAudit, "用户权限与安全审计分系统", "Security Service", "认证与审计")
+    Container(monitorLog, "监控与日志分系统", "Observability Service", "监控与日志")
+    Container(ddsCore, "核心 DDS 节点", "DDS Middleware", "核心域发布/订阅")
+    ContainerDb(historyDb, "历史库", "PostgreSQL", "任务、计划、审计")
+    ContainerDb(stateDb, "实时状态库", "Redis", "会话、资源状态缓存")
+    ContainerDb(spatialDb, "时空/GIS库", "PostGIS", "GIS 与轨迹")
+    ContainerDb(knowledgeDb, "知识规则库", "PostgreSQL/DocumentDB", "规则、模板、条令、目标特征")
+}
+
+Deployment_Node(edgeNano, "Nano-Edge 边缘接入板", "NVIDIA Jetson Nano", "承载协同增强、通信接入与协议桥接") {
+    Container(commNet, "通信组网分系统", "Edge Service", "链路管理、协议适配")
+    Container(enhanceUnit, "协同增强单元分系统", "Edge Adapter Service", "平台代理、任务执行、能力增强")
+    Container(ddsEdge, "边缘 DDS 节点", "DDS Middleware", "边缘域发布/订阅")
+    Container(protocolBridge, "地面站协议桥", "Adapter Service", "地面站报文与内部标准模型映射")
+    Container(edgeRecorder, "边缘记录器", "Recorder Service", "遥测/图像边缘缓存与补传")
+}
+
+Rel(operator, frontend, "HTTPS/WS")
+Rel(superiorCmd, extInterface, "专用协议")
+Rel(frontend, apiGateway, "HTTPS/WS")
+Rel(apiGateway, authAudit, "认证/鉴权")
+Rel(apiGateway, taskMgmt, "API")
+Rel(apiGateway, sitMgmt, "API/WS")
+Rel(apiGateway, battleCtrl, "API")
+Rel(apiGateway, resMgmt, "API")
+
+Rel(taskMgmt, knowledgeRule, "任务模板/规则查询", "API")
+Rel(sitMgmt, knowledgeRule, "目标特征/威胁知识查询", "API")
+Rel(battleCtrl, knowledgeRule, "战术模板/交战规则查询", "API")
+Rel(knowledgeRule, knowledgeDb, "读写知识与规则数据", "SQL/Document API")
+
+Rel(extInterface, ddsCore, "发布/订阅", "DDS")
+Rel(taskMgmt, ddsCore, "发布/订阅", "DDS")
+Rel(sitMgmt, ddsCore, "发布/订阅", "DDS")
+Rel(battleCtrl, ddsCore, "发布/订阅", "DDS")
+Rel(resMgmt, ddsCore, "发布/订阅", "DDS")
+Rel(monitorLog, ddsCore, "订阅监控事件", "DDS")
+
+Rel(commNet, ddsEdge, "发布/订阅", "DDS")
+Rel(enhanceUnit, ddsEdge, "发布/订阅", "DDS")
+Rel(protocolBridge, ddsEdge, "报文适配后发布", "DDS")
+Rel(edgeRecorder, ddsEdge, "记录/补传", "DDS")
+
+Rel(ddsEdge, ddsCore, "跨板 DDS 桥接", "DDS Router / Discovery Server")
+
+Rel(taskMgmt, historyDb, "SQL")
+Rel(battleCtrl, historyDb, "SQL")
+Rel(authAudit, historyDb, "SQL")
+Rel(resMgmt, stateDb, "KV")
+Rel(sitMgmt, spatialDb, "时空查询")
+Rel(apiGateway, spatialDb, "地图资源查询")
+
+Rel(protocolBridge, uavSystem, "现役地面站接口", "TCP/串口/gRPC/视频流")
+Rel(commNet, uavSystem, "链路承载", "数据链/自组网")
+Rel(enhanceUnit, uavSystem, "控制/状态交互", "现役地面站协议")
+
+@enduml

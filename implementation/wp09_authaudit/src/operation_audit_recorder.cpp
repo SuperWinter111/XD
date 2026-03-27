@@ -1,0 +1,2 @@
+#include "wp09_authaudit/operation_audit_recorder.h"
+namespace wp09_authaudit { AuditEvent OperationAuditRecorder::record(const UserAction& userAction, const OpsJobSummary* opsJobSummary) const { return AuditEvent{userAction.traceId, userAction.actorId, userAction.action, userAction.targetId, opsJobSummary == nullptr ? "user_action" : opsJobSummary->operation}; } }

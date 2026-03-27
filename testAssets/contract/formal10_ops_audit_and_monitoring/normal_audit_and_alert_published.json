@@ -1,0 +1,18 @@
+{
+  "trace_id": "trace-formal10-normal-001",
+  "schema_version": "formal10.v1",
+  "event_time": "2026-03-23T11:30:00Z",
+  "source_id": "authaudit.monitorlog",
+  "topic": "audit_event",
+  "audit_event": {
+    "audit_id": "audit-001",
+    "actor_id": "operator-01",
+    "action": "release_approved",
+    "object_id": "release-plan-01"
+  },
+  "monitor_alert": {
+    "alert_id": "alert-001",
+    "severity": "MEDIUM",
+    "alert_type": "config_drift"
+  }
+}

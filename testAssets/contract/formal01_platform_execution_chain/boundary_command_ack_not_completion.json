@@ -1,0 +1,15 @@
+{
+  "sample_type": "boundary",
+  "formal_id": "Formal 01",
+  "topic": "bms/edge/platform/event/command_ack",
+  "schema_version": "v1",
+  "trace_id": "trace-formal01-boundary-001",
+  "event_time": "2026-03-20T09:02:00Z",
+  "source_id": "enhanceunit.platform.gateway",
+  "command_id": "cmd-loiter-001",
+  "platform_id": "uav-001",
+  "accepted": true,
+  "ack_code": "ACCEPTED",
+  "message": "accepted only, execution pending",
+  "boundary_rule": "command_ack_not_equal_execution_completed"
+}

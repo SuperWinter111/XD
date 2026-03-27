@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package bms.schema.battle;
+
+option java_multiple_files = true;
+option java_package = "com.bms.schema.battle";
+option csharp_namespace = "Bms.Schema.Battle";
+
+import "bms/schema/common.proto";
+
+message KeyValueParameter {
+  string key = 1;
+  string value = 2;
+  string unit = 3;
+}
+
+message RouteSegment {
+  string route_segment_id = 1;
+  double latitude = 2;
+  double longitude = 3;
+  double altitude_m = 4;
+  double speed_mps = 5;
+  bms.schema.common.RouteAction action = 6;
+}
+
+message SensorProfile {
+  string sensor_id = 1;
+  string sensor_mode = 2;
+  repeated KeyValueParameter parameters = 3;
+}
+
+message WeaponProfile {
+  string weapon_id = 1;
+  string action_mode = 2;
+  repeated KeyValueParameter parameters = 3;
+}
+
+message BattlePlan {
+  bms.schema.common.CommonHeader header = 1;
+  string battle_plan_id = 2;
+  string task_package_id = 3;
+  repeated RouteSegment route_segments = 4;
+  repeated string formation_member_ids = 5;
+  repeated SensorProfile sensor_profiles = 6;
+  repeated WeaponProfile weapon_profiles = 7;
+  int64 execute_not_before_utc_ms = 8;
+  int64 execute_not_after_utc_ms = 9;
+}

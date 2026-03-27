@@ -1,0 +1,69 @@
+@startuml C4_Dynamic_ReplanRecovery
+!include <C4/C4_Dynamic>
+
+title BMS系统 - Dynamic Diagram 执行异常下的计划调整与任务重构流程
+caption 末端执行异常时，先做计划级调整；若仍不满足任务约束，则回退至任务重构；若仍无可行解，则请求人工处理
+
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+' ============================================================
+' 参与者
+' ============================================================
+
+Person(commander, "业务管理人员", "指挥员/决策者")
+System_Ext(uavSystem, "无人平台任务系统", "实验室阶段可由数字模型替代，工程阶段经地面站/任务系统接入实机")
+
+Container(hmi, "人机交互分系统", "前端", "")
+Container(enhanceUnit, "协同增强单元分系统", "边缘代理", "")
+Container(sitMgmt, "态势管理分系统", "业务服务", "")
+Container(battleCtrl, "交战管控分系统", "业务服务", "")
+Container(taskMgmt, "任务管理分系统", "业务服务", "")
+Container(resMgmt, "资源管理分系统", "业务服务", "")
+Container(knowledgeRule, "知识与规则管理分系统", "规则引擎", "")
+Container(msgBus, "数据交换与消息服务分系统", "消息中间件", "")
+
+' ============================================================
+' 动态流程
+' ============================================================
+
+' ===== Phase 1: 执行异常上报 =====
+Rel(uavSystem, enhanceUnit, "1. [RR-01] 上报执行异常/资源受限/航路失配", "数据链")
+Rel(enhanceUnit, msgBus, "2. [RR-02] 发布异常执行状态", "Pub/Sub")
+Rel(msgBus, battleCtrl, "3. [RR-03] 分发异常状态至交战管控", "Subscribe")
+Rel(battleCtrl, battleCtrl, "4. [RR-04] 识别异常类型并提取计划影响")
+
+' ===== Phase 2: 计划级调整 =====
+Rel(battleCtrl, sitMgmt, "5. [RR-05] 获取最新态势与威胁信息", "API")
+Rel(battleCtrl, resMgmt, "6. [RR-06] 查询当前可用资源与能力", "API")
+Rel(battleCtrl, knowledgeRule, "7. [RR-07] 加载任务约束/交战规则", "API")
+Rel(battleCtrl, battleCtrl, "8. [RR-08] 计划重算与约束校核")
+
+' ===== Phase 3A: 满足任务约束，继续执行 =====
+Rel(battleCtrl, hmi, "9. [RR-09A] 推送计划调整结果", "WebSocket")
+Rel(battleCtrl, msgBus, "10. [RR-10A] 发布调整后的交战计划", "Pub/Sub")
+Rel(msgBus, enhanceUnit, "11. [RR-11A] 分发调整后的计划", "Subscribe")
+Rel(enhanceUnit, uavSystem, "12. [RR-12A] 下发新计划继续执行", "数据链")
+
+' ===== Phase 3B: 不满足任务约束，回退任务层 =====
+Rel(battleCtrl, taskMgmt, "13. [RR-13B] 发起任务重构请求", "API")
+Rel(taskMgmt, taskMgmt, "14. [RR-14B] 重新解析任务约束并重构子任务", "")
+Rel(taskMgmt, resMgmt, "15. [RR-15B] 重新匹配资源与分配", "API")
+Rel(resMgmt, taskMgmt, "16. [RR-16B] 返回重构可用资源", "API")
+Rel(taskMgmt, knowledgeRule, "17. [RR-17B] 查询任务模板与重构规则", "API")
+Rel(taskMgmt, taskMgmt, "18. [RR-18B] 生成重构后的任务方案并校核约束", "")
+
+' ===== Phase 4B-1: 任务重构成功，重新进入计划层 =====
+Rel(taskMgmt, battleCtrl, "19. [RR-19B1] 下发重构后的任务约束/作战任务", "API")
+Rel(battleCtrl, battleCtrl, "20. [RR-20B1] 基于新任务重新生成执行计划", "")
+Rel(battleCtrl, hmi, "21. [RR-21B1] 推送重构与新计划结果", "WebSocket")
+Rel(battleCtrl, msgBus, "22. [RR-22B1] 发布重构后的交战计划", "Pub/Sub")
+Rel(msgBus, enhanceUnit, "23. [RR-23B1] 分发重构后的计划", "Subscribe")
+Rel(enhanceUnit, uavSystem, "24. [RR-24B1] 下发重构后的执行计划", "数据链")
+
+' ===== Phase 4B-2: 任务重构失败，人工介入 =====
+Rel(taskMgmt, hmi, "25. [RR-25B2] 推送不可自动重构告警与人工处置请求", "WebSocket")
+Rel(commander, hmi, "26. [RR-26B2] 查看失败原因并人工决策", "")
+Rel(hmi, taskMgmt, "27. [RR-27B2] 提交人工裁决：调整约束/降级执行/终止任务", "REST API")
+
+@enduml

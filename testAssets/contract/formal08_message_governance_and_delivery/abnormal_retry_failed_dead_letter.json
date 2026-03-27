@@ -1,0 +1,16 @@
+{
+  "trace_id": "trace-formal08-abnormal-001",
+  "schema_version": "formal08.v1",
+  "event_time": "2026-03-23T11:05:00Z",
+  "source_id": "msgservice.delivery",
+  "topic": "bms/core/ops/msg/dead_letter",
+  "dead_letter_record": {
+    "dead_letter_id": "dead-letter-002",
+    "original_topic": "mission_progress",
+    "payload_type": "MissionProgress",
+    "message_trace_id": "trace-formal08-abnormal-001",
+    "retry_count": 3,
+    "failure_reason": "TARGET_ENDPOINT_UNREACHABLE",
+    "last_attempt_utc_ms": 1774263900000
+  }
+}

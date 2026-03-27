@@ -1,0 +1,133 @@
+@startuml Code_08_CommNet
+title BMS系统 - Code Diagram 08 通信组网分系统
+
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "链路接入与承载层" as linkLayer {
+    class LinkAccessFacade
+    class DataLinkSessionManager
+    class LinkEstablishmentService
+    class LinkSwitchService
+    class BandwidthAllocationService
+    class RedundancyCoordinator
+
+    LinkAccessFacade --> DataLinkSessionManager
+    LinkAccessFacade --> LinkEstablishmentService
+    LinkAccessFacade --> LinkSwitchService
+    LinkAccessFacade --> BandwidthAllocationService
+    LinkAccessFacade --> RedundancyCoordinator
+}
+
+package "组网与拓扑层" as topologyLayer {
+    class TopologyManager
+    class AdHocNetworkManager
+    class DynamicReconfigurationService
+    class NodeMembershipService
+    class RouteComputationService
+    class TopologySnapshotBuilder
+
+    TopologyManager --> AdHocNetworkManager
+    TopologyManager --> DynamicReconfigurationService
+    TopologyManager --> NodeMembershipService
+    TopologyManager --> RouteComputationService
+    TopologyManager --> TopologySnapshotBuilder
+}
+
+package "协议与转发层" as protocolLayer {
+    class ProtocolAdapterService
+    class ProtocolVersionManager
+    class SerializationService
+    class FrameForwardingService
+    class InternalRelayGateway
+    class ExternalRelayGateway
+
+    ProtocolAdapterService --> ProtocolVersionManager
+    ProtocolAdapterService --> SerializationService
+    ProtocolAdapterService --> FrameForwardingService
+    FrameForwardingService --> InternalRelayGateway
+    FrameForwardingService --> ExternalRelayGateway
+}
+
+package "安全与质量层" as securityLayer {
+    class CommSecurityService
+    class AuthenticationService
+    class EncryptionService
+    class AntiJammingService
+    class SpectrumManagementService
+    class LinkQualityAssessmentService
+    class DegradationAlertService
+    class FaultLocalizationService
+
+    CommSecurityService --> AuthenticationService
+    CommSecurityService --> EncryptionService
+    CommSecurityService --> AntiJammingService
+    CommSecurityService --> SpectrumManagementService
+    LinkQualityAssessmentService --> DegradationAlertService
+    LinkQualityAssessmentService --> FaultLocalizationService
+}
+
+package "集成与观测层" as integrationLayer {
+    class EnhanceUnitLinkGateway
+    class ExtInterfaceLinkGateway
+    class MsgBusRelayGateway
+    class MonitorLogGateway
+    class SecurityAuditGateway
+    class CommEventPublisher
+}
+
+package "领域对象" as domainLayer {
+    class LinkSession
+    class LinkProfile
+    class TopologySnapshot
+    class RoutePath
+    class RelayFrame
+    class CommSecurityContext
+    class LinkQualitySnapshot
+    class DegradationAlert
+    class SecurityEvent
+}
+
+DataLinkSessionManager --> LinkSession
+BandwidthAllocationService --> LinkProfile
+TopologySnapshotBuilder --> TopologySnapshot
+RouteComputationService --> RoutePath
+FrameForwardingService --> RelayFrame
+CommSecurityService --> CommSecurityContext
+LinkQualityAssessmentService --> LinkQualitySnapshot
+DegradationAlertService --> DegradationAlert
+AuthenticationService --> SecurityEvent
+
+EnhanceUnitLinkGateway --> LinkAccessFacade : platform link traffic
+ExtInterfaceLinkGateway --> ProtocolAdapterService : external protocol traffic
+LinkEstablishmentService --> TopologyManager : link state update
+LinkSwitchService --> TopologyManager : reroute trigger
+RouteComputationService --> FrameForwardingService : route path
+ProtocolAdapterService --> MsgBusRelayGateway : relay internal payload
+CommSecurityService --> LinkEstablishmentService : secure channel policy
+CommSecurityService --> ProtocolAdapterService : protocol security context
+LinkQualityAssessmentService --> MonitorLogGateway : quality metrics
+DegradationAlertService --> CommEventPublisher : comm degraded event
+AuthenticationService --> SecurityAuditGateway : auth failure event
+TopologyManager --> CommEventPublisher : topology changed event
+LinkQualityAssessmentService --> CommEventPublisher : link quality event
+
+note right of LinkAccessFacade
+通信组网负责链路建立、切换、带宽与冗余承载。
+它承载业务消息，但不拥有任务、计划、态势等业务对象的定义权。
+end note
+
+note right of ProtocolAdapterService
+负责外部链路协议适配与内部中继转发。
+它与消息服务配合，但不替代消息服务的 topic、schema 与可靠投递治理。
+end note
+
+note bottom of LinkQualityAssessmentService
+统一产出链路质量、降级告警与故障定位结果。
+这些对象属于通信语义，可被资源、交战、运维消费。
+end note
+
+@enduml

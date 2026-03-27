@@ -1,0 +1,20 @@
+{
+  "trace_id": "trace-formal09-normal-001",
+  "schema_version": "formal09.v1",
+  "event_time": "2026-03-23T11:15:00Z",
+  "source_id": "simulation.clock",
+  "topic": "sim_flight_state",
+  "clock_tick": {
+    "tick_id": "tick-001",
+    "sim_time": "2026-03-23T11:15:00Z"
+  },
+  "sim_flight_state": {
+    "platform_id": "uav-sim-01",
+    "position": {
+      "lat": 31.230,
+      "lon": 121.480,
+      "alt_m": 3100
+    },
+    "velocity_mps": 58
+  }
+}

@@ -1,0 +1,156 @@
+@startuml Code_03_BattleCtrl
+title BMS系统 - Code Diagram 03 交战管控分系统
+
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "任务接入与规则装载层" as ingressLayer {
+    class BattleTaskIngressFacade
+    class TaskPackageAdapter
+    class ConstraintExtractor
+    class ExecutabilityAssessor
+    class RuleLoader
+    class TaskPlanSemanticBridge
+
+    BattleTaskIngressFacade --> TaskPackageAdapter
+    BattleTaskIngressFacade --> ConstraintExtractor
+    BattleTaskIngressFacade --> ExecutabilityAssessor
+    ConstraintExtractor --> RuleLoader
+    ConstraintExtractor --> TaskPlanSemanticBridge
+}
+
+package "编队与战术匹配层" as tacticLayer {
+    class FormationPlanner
+    class MemberCapabilityEvaluator
+    class NetworkCoordinationService
+    class TacticSceneRecognizer
+    class TacticTemplateMatcher
+    class TacticParameterTuner
+    class TacticRecommendationService
+
+    FormationPlanner --> MemberCapabilityEvaluator
+    FormationPlanner --> NetworkCoordinationService
+    TacticSceneRecognizer --> TacticTemplateMatcher
+    TacticTemplateMatcher --> TacticParameterTuner
+    TacticTemplateMatcher --> TacticRecommendationService
+}
+
+package "计划生成与校核层" as planLayer {
+    class BattlePlanGenerationService
+    class SearchPlanBuilder
+    class StrikePlanBuilder
+    class DefensePlanBuilder
+    class RouteCoordinationService
+    class SensorModePlanner
+    class WeaponActionPlanner
+    class PlanConflictResolver
+    class ConstraintSatisfactionChecker
+
+    BattlePlanGenerationService --> SearchPlanBuilder
+    BattlePlanGenerationService --> StrikePlanBuilder
+    BattlePlanGenerationService --> DefensePlanBuilder
+    BattlePlanGenerationService --> RouteCoordinationService
+    BattlePlanGenerationService --> SensorModePlanner
+    BattlePlanGenerationService --> WeaponActionPlanner
+    BattlePlanGenerationService --> PlanConflictResolver
+    BattlePlanGenerationService --> ConstraintSatisfactionChecker
+}
+
+package "执行监控与计划调整层" as execLayer {
+    class PlanDispatchService
+    class ExecutionStateMonitor
+    class ExceptionClassifier
+    class PlanAdjustmentService
+    class EmergencyActionService
+    class HumanPlanInterventionGateway
+    class EngagementEffectEvaluator
+    class ReattackDecisionService
+    class EffectReportAssembler
+
+    PlanDispatchService --> ExecutionStateMonitor
+    ExecutionStateMonitor --> ExceptionClassifier
+    ExceptionClassifier --> PlanAdjustmentService
+    PlanAdjustmentService --> EmergencyActionService
+    EngagementEffectEvaluator --> ReattackDecisionService
+    EngagementEffectEvaluator --> EffectReportAssembler
+}
+
+package "集成与持久化层" as integrationLayer {
+    class SituationGateway
+    class ResourceGateway
+    class EnhanceUnitGateway
+    class TaskMgmtGateway
+    class RuleQueryGateway
+    class BattleEventPublisher
+    class PlanRepository
+    class EffectRepository
+}
+
+package "领域对象" as domainLayer {
+    class BattleTaskPackage
+    class EngagementConstraint
+    class FormationScheme
+    class TacticTemplate
+    class BattlePlan
+    class RouteSegment
+    class SensorProfile
+    class WeaponProfile
+    class AdjustmentOption
+    class ExecutionException
+    class ExecutionStateSnapshot
+    class EngagementEffectReport
+}
+
+TaskPackageAdapter --> BattleTaskPackage
+ConstraintExtractor --> EngagementConstraint
+FormationPlanner --> FormationScheme
+TacticTemplateMatcher --> TacticTemplate
+BattlePlanGenerationService --> BattlePlan
+RouteCoordinationService --> RouteSegment
+SensorModePlanner --> SensorProfile
+WeaponActionPlanner --> WeaponProfile
+PlanAdjustmentService --> AdjustmentOption
+ExceptionClassifier --> ExecutionException
+ExecutionStateMonitor --> ExecutionStateSnapshot
+EffectReportAssembler --> EngagementEffectReport
+
+TaskPlanSemanticBridge --> FormationPlanner : task semantics
+TaskPlanSemanticBridge --> TacticSceneRecognizer : scenario context
+TaskPlanSemanticBridge --> BattlePlanGenerationService : plan goals
+FormationPlanner --> BattlePlanGenerationService : formation scheme
+TacticRecommendationService --> BattlePlanGenerationService : tactic recommendation
+BattlePlanGenerationService --> PlanDispatchService : approved battle plan
+PlanDispatchService --> EnhanceUnitGateway : dispatch executable plan
+ExecutionStateMonitor --> EnhanceUnitGateway : subscribe execution state
+ExecutionStateMonitor --> BattleEventPublisher : execution status
+ExceptionClassifier --> TaskMgmtGateway : out-of-constraint reconstruction request
+PlanAdjustmentService --> EnhanceUnitGateway : adjusted battle plan
+PlanAdjustmentService --> BattleEventPublisher : adjustment status
+HumanPlanInterventionGateway --> PlanAdjustmentService : manual plan change
+EngagementEffectEvaluator --> EffectRepository : persist effect report
+BattlePlanGenerationService --> PlanRepository : persist generated plan
+RuleLoader --> RuleQueryGateway : load engagement rules
+FormationPlanner --> ResourceGateway : query member status
+BattlePlanGenerationService --> ResourceGateway : query capability and availability
+BattlePlanGenerationService --> SituationGateway : query threat and target state
+TacticSceneRecognizer --> SituationGateway : query situation snapshot
+
+note right of TaskPlanSemanticBridge
+负责把任务包转换为计划目标与约束。
+从这里开始进入计划语义：航路、编队、载荷模式、武器动作、执行时序。
+end note
+
+note right of PlanAdjustmentService
+仅在当前任务约束仍满足时执行计划级调整。
+一旦越出任务边界，必须回退 TaskMgmt 发起任务重构。
+end note
+
+note bottom of HumanPlanInterventionGateway
+人工介入点保留在计划层：
+调航路、调编队、调载荷模式、调武器动作、终止当前计划。
+end note
+
+@enduml

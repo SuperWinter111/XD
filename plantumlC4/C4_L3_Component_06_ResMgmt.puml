@@ -1,0 +1,78 @@
+@startuml C4_L3_Component_06_ResMgmt
+!include <C4/C4_Component>
+
+title 资源管理分系统 - C4 Level 3 组件图
+caption 业务应用层 / 资源管理分系统
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+' ============================================================
+' 外部依赖容器
+' ============================================================
+
+Container(hmi, "人机交互分系统", "Web前端/GIS引擎", "资源总览、列表与分配操作")
+Container(taskMgmt, "任务管理分系统", "业务服务", "资源匹配与分配请求")
+Container(battleCtrl, "交战管控分系统", "业务服务", "查询资源状态与能力")
+Container(enhanceUnit, "协同增强单元分系统", "边缘代理", "平台注册与状态上报")
+Container(msgBus, "数据交换与消息服务分系统", "消息中间件", "消息发布/订阅")
+ContainerDb(dbMgmt, "数据库管理分系统", "数据库集群", "资源数据存储")
+Container(authAudit, "用户权限与安全审计分系统", "安全服务", "权限校验")
+
+' ============================================================
+' 资源管理分系统边界
+' ============================================================
+
+Container_Boundary(resMgmt, "资源管理分系统") {
+
+    Component(resRegister, "资源注册与发现模块", "注册服务", "无人系统自动发现与注册\n资源上线/下线管理\n唯一标识管理\n类型分类管理\n接入验证")
+
+    Component(resStatus, "资源状态管理模块", "状态管理", "平台状态实时监控\n能源状态(油量/电量)\n载荷状态(传感器/武器)\n通信链路状态\n可用性/健康度评估")
+
+    Component(resCapability, "资源能力建模模块", "能力建模", "平台/传感器/武器能力建模\n能力-任务匹配矩阵\n能力差异化标注")
+
+    Component(resConfig, "资源配置管理模块", "配置管理", "资源分组/标签管理\n配置参数管理\n配置模板管理")
+
+    Component(resSchedule, "资源调度模块", "调度引擎", "资源分配与回收\n资源冲突仲裁\n优先级管理\n资源预留与释放\n调度策略管理")
+
+    Component(resPermission, "资源权限管理模块", "权限控制", "资源访问控制\n操作权限分配\n使用授权管理")
+
+    Component(resQuality, "资源质量监控模块", "质量监控", "任务执行质量评估\n使用效率统计\n故障率统计\n寿命管理")
+}
+
+' ============================================================
+' 输入
+' ============================================================
+
+Rel_D(hmi, resStatus, "查看资源状态", "REST API")
+Rel_D(hmi, resSchedule, "请求资源调度", "REST API")
+Rel_D(hmi, resConfig, "资源配置操作", "REST API")
+Rel_D(enhanceUnit, resRegister, "平台注册/状态上报", "内部消息")
+Rel_D(taskMgmt, resSchedule, "资源匹配与分配请求", "API")
+Rel_D(battleCtrl, resStatus, "查询资源状态与能力", "API")
+Rel_D(battleCtrl, resCapability, "查询资源能力", "API")
+
+' ============================================================
+' 内部模块交互
+' ============================================================
+
+Rel_R(resRegister, resStatus, "注册后→建立状态监控")
+Rel_R(resRegister, resCapability, "注册后→能力建模")
+Rel_D(resRegister, resConfig, "注册后→初始化配置")
+Rel_D(resCapability, resSchedule, "提供能力数据→调度匹配")
+Rel_D(resStatus, resSchedule, "提供状态数据→调度决策")
+Rel_R(resSchedule, resPermission, "调度前→权限校验")
+Rel_D(resStatus, resQuality, "状态数据→质量分析")
+
+' ============================================================
+' 对外部容器
+' ============================================================
+
+Rel_D(resPermission, authAudit, "权限校验委托", "API")
+Rel_D(resStatus, msgBus, "发布资源状态变更", "Pub/Sub")
+Rel_D(resSchedule, msgBus, "发布资源分配事件", "Pub/Sub")
+Rel_D(resStatus, dbMgmt, "读写资源状态", "SQL")
+Rel_D(resCapability, dbMgmt, "读写能力模型", "SQL")
+Rel_D(resQuality, dbMgmt, "写入质量统计", "SQL")
+
+@enduml

@@ -1,0 +1,75 @@
+@startuml C4_L3_Component_07_MsgService
+!include <C4/C4_Component>
+
+title 数据交换与消息服务分系统 - C4 Level 3 组件图
+caption 平台服务层 / 数据交换与消息服务分系统
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+' ============================================================
+' 外部依赖容器 (消息的生产者/消费者)
+' ============================================================
+
+Container(taskMgmt, "任务管理分系统", "业务服务", "任务消息生产/消费")
+Container(sitMgmt, "态势管理分系统", "业务服务", "态势消息生产/消费")
+Container(battleCtrl, "交战管控分系统", "业务服务", "交战消息生产/消费")
+Container(resMgmt, "资源管理分系统", "业务服务", "资源消息生产/消费")
+Container(extInterface, "外部接口管理分系统", "接口服务", "外部消息转发")
+Container(enhanceUnit, "协同增强单元分系统", "边缘代理", "平台数据上报")
+Container(monitorLog, "监控与日志分系统", "监控服务", "消息监控采集")
+
+' ============================================================
+' 数据交换与消息服务分系统边界
+' ============================================================
+
+Container_Boundary(msgService, "数据交换与消息服务分系统") {
+
+    Component(msgBus, "消息总线模块", "消息代理", "消息发布与订阅管理\n消息路由与过滤\n消息优先级管理\n消息队列管理\n消息持久化")
+
+    Component(dataDistrib, "数据分发模块", "分发引擎", "数据订阅管理\n数据推送服务\n数据广播服务\n数据按需拉取")
+
+    Component(formatConvert, "数据格式转换模块", "转换服务", "数据格式标准定义\n格式自动转换\n编解码服务\n数据映射配置")
+
+    Component(reliability, "消息可靠性保障模块", "可靠性引擎", "消息确认与重发\n消息幂等控制\n消息顺序保障\n消息积压告警\n死信队列管理")
+
+    Component(flowControl, "数据流控模块", "流控引擎", "流量控制\n限流与熔断\n背压处理\n数据流优先级管理")
+}
+
+' ============================================================
+' 消息生产者 → 消息总线
+' ============================================================
+
+Rel_D(taskMgmt, msgBus, "发布任务消息", "Pub/Sub")
+Rel_D(sitMgmt, msgBus, "发布态势消息", "Pub/Sub")
+Rel_D(battleCtrl, msgBus, "发布交战消息", "Pub/Sub")
+Rel_D(resMgmt, msgBus, "发布资源消息", "Pub/Sub")
+Rel_D(extInterface, msgBus, "转发外部消息", "Pub/Sub")
+Rel_D(enhanceUnit, msgBus, "上报平台数据", "Pub/Sub")
+
+' ============================================================
+' 内部模块交互
+' ============================================================
+
+Rel_R(msgBus, dataDistrib, "消息→分发路由")
+Rel_D(msgBus, formatConvert, "消息→格式转换")
+Rel_D(reliability, msgBus, "保障消息可靠投递")
+Rel_D(flowControl, msgBus, "流量控制与背压")
+Rel_R(flowControl, dataDistrib, "分发流量控制")
+
+' ============================================================
+' 消息总线 → 消费者 (通过分发)
+' ============================================================
+
+Rel_D(dataDistrib, taskMgmt, "推送任务相关消息", "Pub/Sub")
+Rel_D(dataDistrib, sitMgmt, "推送态势相关消息", "Pub/Sub")
+Rel_D(dataDistrib, battleCtrl, "推送交战相关消息", "Pub/Sub")
+
+' ============================================================
+' 监控
+' ============================================================
+
+Rel_D(msgBus, monitorLog, "上报消息吞吐/积压指标")
+Rel_D(reliability, monitorLog, "上报重发/死信告警")
+
+@enduml

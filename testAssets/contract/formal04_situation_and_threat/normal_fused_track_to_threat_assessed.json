@@ -1,0 +1,25 @@
+{
+  "trace_id": "trace-formal04-normal-001",
+  "schema_version": "formal04.v1",
+  "event_time": "2026-03-23T10:00:00Z",
+  "source_id": "sitmgmt.fusion",
+  "topic": "threat_assessed",
+  "fused_track": {
+    "track_id": "trk-001",
+    "target_id": "target-001",
+    "confidence": 0.92,
+    "position": {
+      "lat": 31.224,
+      "lon": 121.469,
+      "alt_m": 3200
+    }
+  },
+  "threat_assessment": {
+    "assessment_id": "ta-001",
+    "threat_level": "HIGH",
+    "reasons": [
+      "approaching_protected_zone",
+      "hostile_profile_match"
+    ]
+  }
+}

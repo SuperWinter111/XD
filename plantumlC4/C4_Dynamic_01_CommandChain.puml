@@ -1,0 +1,72 @@
+@startuml C4_Dynamic_CommandChain
+!include <C4/C4_Dynamic>
+
+title BMS系统 - Dynamic Diagram 指令下达到任务执行流程
+caption 从上级指令接收到无人平台任务执行的完整指挥链路
+
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+' ============================================================
+' 参与者
+' ============================================================
+
+Person(commander, "业务管理人员", "指挥员")
+System_Ext(superiorCmd, "上级指控系统", "下达作战指令")
+System_Ext(uavSystem, "无人平台任务系统", "实验室阶段可由数字模型替代，工程阶段经地面站/任务系统接入实机")
+
+Container(extInterface, "外部接口管理分系统", "接口服务", "")
+Container(hmi, "人机交互分系统", "前端", "")
+Container(taskMgmt, "任务管理分系统", "业务服务", "")
+Container(battleCtrl, "交战管控分系统", "业务服务", "")
+Container(resMgmt, "资源管理分系统", "业务服务", "")
+Container(knowledgeRule, "知识与规则管理分系统", "规则引擎", "")
+Container(msgBus, "数据交换与消息服务分系统", "消息中间件", "")
+Container(enhanceUnit, "协同增强单元分系统", "边缘代理", "")
+ContainerDb(dbMgmt, "数据库管理分系统", "数据库集群", "")
+
+' ============================================================
+' 动态流程 (带序号)
+' ============================================================
+
+' --- Phase 1: 指令接收与解析 ---
+Rel(superiorCmd, extInterface, "1. [CC-01] 下达作战指令", "军用数据链")
+Rel(extInterface, msgBus, "2. [CC-02] 转发指令消息", "Pub/Sub")
+Rel(msgBus, taskMgmt, "3. [CC-03] 分发至任务管理", "Subscribe")
+Rel(taskMgmt, taskMgmt, "4. [CC-04] 指令解析与校验")
+
+' --- Phase 2: 任务分解与任务方案生成 ---
+Rel(taskMgmt, knowledgeRule, "5. [CC-05] 查询任务模板", "API")
+Rel(taskMgmt, taskMgmt, "6. [CC-06] 任务分解与模板匹配")
+Rel(taskMgmt, resMgmt, "7. [CC-07] 请求资源匹配", "API")
+Rel(resMgmt, taskMgmt, "8. [CC-08] 返回可用资源列表", "API")
+Rel(taskMgmt, taskMgmt, "9. [CC-09] 生成任务方案(多方案)")
+
+' --- Phase 3: 人工决策审批 ---
+Rel(taskMgmt, hmi, "10. [CC-10] 推送任务方案至指挥界面", "WebSocket")
+Rel(commander, hmi, "11. [CC-11] 审阅任务方案并选定/修改")
+Rel(hmi, taskMgmt, "12. [CC-12] 确认任务方案下发", "REST API")
+
+' --- Phase 4: 交战计划生成 ---
+Rel(taskMgmt, battleCtrl, "13. [CC-13] 下发作战任务", "API")
+Rel(battleCtrl, knowledgeRule, "14. [CC-14] 加载交战规则与战术模板", "API")
+Rel(battleCtrl, battleCtrl, "15. [CC-15] 生成交战计划(航路/编队/武器)")
+Rel(battleCtrl, dbMgmt, "16. [CC-16] 持久化交战计划", "SQL")
+
+' --- Phase 5: 计划下发与执行 ---
+Rel(battleCtrl, msgBus, "17. [CC-17] 发布交战计划", "Pub/Sub")
+Rel(msgBus, enhanceUnit, "18. [CC-18] 分发至协同增强单元", "Subscribe")
+Rel(enhanceUnit, enhanceUnit, "19. [CC-19] 解析计划/转换航路")
+Rel(enhanceUnit, uavSystem, "20. [CC-20] 下发遥控指令", "数据链")
+
+' --- Phase 6: 执行反馈 ---
+Rel(uavSystem, enhanceUnit, "21. [CC-21] 上报执行状态", "数据链")
+Rel(enhanceUnit, msgBus, "22. [CC-22] 发布执行状态", "Pub/Sub")
+Rel(msgBus, battleCtrl, "23. [CC-23] 更新计划执行进度", "Subscribe")
+Rel(battleCtrl, hmi, "24. [CC-24] 推送执行进度至界面", "WebSocket")
+
+' --- Phase 7: 状态上报 ---
+Rel(taskMgmt, extInterface, "25. [CC-25] 聚合任务状态", "API")
+Rel(extInterface, superiorCmd, "26. [CC-26] 上报任务状态", "军用数据链")
+
+@enduml

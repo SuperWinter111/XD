@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package bms.schema.bff;
+
+option java_multiple_files = true;
+option java_package = "com.bms.schema.bff";
+option csharp_namespace = "Bms.Schema.Bff";
+
+import "bms/schema/common.proto";
+
+enum UiViewType {
+  UI_VIEW_TYPE_UNKNOWN = 0;
+  UI_VIEW_TYPE_DASHBOARD = 1;
+  UI_VIEW_TYPE_ALERT_STREAM = 2;
+  UI_VIEW_TYPE_TASK_PANEL = 3;
+  UI_VIEW_TYPE_SITUATION_PANEL = 4;
+}
+
+message QueryFilter {
+  repeated string ids = 1;
+  repeated string types = 2;
+  int64 start_time_utc_ms = 3;
+  int64 end_time_utc_ms = 4;
+  string keyword = 5;
+}
+
+message UiTaskSummary {
+  string mission_id = 1;
+  string task_package_id = 2;
+  string task_type = 3;
+  string status = 4;
+  double progress_ratio = 5;
+  int64 start_time_utc_ms = 6;
+  int64 end_time_utc_ms = 7;
+}
+
+message UiSituationSnapshot {
+  string snapshot_id = 1;
+  uint32 track_count = 2;
+  uint32 threat_count = 3;
+  uint32 critical_alert_count = 4;
+  string summary = 5;
+}
+
+message UiBattleOverview {
+  string battle_plan_id = 1;
+  string engagement_status = 2;
+  uint32 formation_member_count = 3;
+  uint32 target_count = 4;
+  string summary = 5;
+}
+
+message UiResourceOverview {
+  uint32 total_count = 1;
+  uint32 available_count = 2;
+  uint32 degraded_count = 3;
+  uint32 unavailable_count = 4;
+  string summary = 5;
+}
+
+message UiAlertItem {
+  string alert_id = 1;
+  bms.schema.common.UiAlertType alert_type = 2;
+  bms.schema.common.ExceptionSeverity severity = 3;
+  string source_component = 4;
+  string summary = 5;
+  int64 event_time_utc_ms = 6;
+}
+
+message UiDashboardRequest {
+  bms.schema.common.CommonHeader header = 1;
+  QueryFilter filter = 2;
+}
+
+message UiDashboardResponse {
+  bms.schema.common.CommonHeader header = 1;
+  repeated UiTaskSummary tasks = 2;
+  UiSituationSnapshot situation = 3;
+  UiBattleOverview battle = 4;
+  UiResourceOverview resource = 5;
+  repeated UiAlertItem alerts = 6;
+}
+
+message UiPushEnvelope {
+  bms.schema.common.CommonHeader header = 1;
+  string channel = 2;
+  UiViewType view_type = 3;
+  bytes payload_bytes = 4;
+}

@@ -1,0 +1,86 @@
+@startuml C4_L3_Component_04_SitMgmt
+!include <C4/C4_Component>
+
+title 态势管理分系统 - C4 Level 3 组件图
+caption 业务应用层 / 态势管理分系统
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+' ============================================================
+' 外部依赖容器
+' ============================================================
+
+Container(hmi, "人机交互分系统", "Web前端/GIS引擎", "态势显示、图层筛选、历史回放")
+Container(extInterface, "外部接口管理分系统", "接口服务", "外部态势数据接入")
+Container(enhanceUnit, "协同增强单元分系统", "边缘代理", "目标数据上报")
+Container(msgBus, "数据交换与消息服务分系统", "消息中间件", "态势消息发布/订阅")
+Container(knowledgeRule, "知识与规则管理分系统", "规则引擎", "目标特征知识库")
+ContainerDb(dbMgmt, "数据库管理分系统", "数据库集群", "时空/目标/情报数据")
+
+' ============================================================
+' 态势管理分系统边界
+' ============================================================
+
+Container_Boundary(sitMgmt, "态势管理分系统") {
+
+    Component(dataPreprocess, "数据预处理模块", "数据清洗", "数据质量评估与清洗\n数据校验纠错/去重\n编码解码转换\n时间戳对齐\n数据可信度评估")
+
+    Component(infoProcess, "信息处理模块", "数据提取", "图像/文本/结构化数据提取\n数据时效性评估\n数据准确性判断\n时空一致性评估")
+
+    Component(infoFusion, "信息融合模块", "融合引擎", "点迹/航迹关联融合\n目标属性融合\n情报印证与冲突解决\n目标跟踪管理\n虚假目标滤除")
+
+    Component(threatAnalysis, "威胁分析模块", "分析引擎", "威胁等级自动计算\n威胁聚类与优先级排序\n威胁变化趋势分析\n威胁区域分级标注")
+
+    Component(envAnalysis, "战场环境分析模块", "分析引擎", "地形/天气/电磁环境分析\n环境对作战影响评估")
+
+    Component(sitAnalysis, "战场态势分析模块", "分析引擎", "地形要素分析(交通/障碍/遮蔽)\n战术区域分析(集结/伏击/阵地)\n战场形势分析(控制区/薄弱点)")
+
+    Component(sitReasoning, "态势推理模块", "AI推理", "目标路径/行为意图预测\n编队战术意图预测\n态势演变趋势推演\n推理置信度评估")
+
+    Component(sitMonitor, "态势监控模块", "监控引擎", "实时告警与预警\n异常行为检测\n关键事件识别\n战场态势简报生成")
+}
+
+' ============================================================
+' 数据输入
+' ============================================================
+
+Rel_D(extInterface, dataPreprocess, "外部态势数据", "内部消息")
+Rel_D(enhanceUnit, dataPreprocess, "平台传感器/目标数据", "内部消息")
+
+' ============================================================
+' 内部处理流水线
+' ============================================================
+
+Rel_R(dataPreprocess, infoProcess, "清洗后数据→信息提取")
+Rel_R(infoProcess, infoFusion, "提取结果→信息融合")
+Rel_D(infoFusion, threatAnalysis, "融合目标→威胁分析")
+Rel_D(infoFusion, sitAnalysis, "融合态势→战场分析")
+Rel_R(envAnalysis, sitAnalysis, "环境数据支撑态势分析")
+Rel_D(sitAnalysis, sitReasoning, "态势结果→推理预测")
+Rel_D(threatAnalysis, sitMonitor, "威胁数据→实时监控")
+Rel_D(sitReasoning, sitMonitor, "推理结果→监控预警")
+
+' ============================================================
+' 输出
+' ============================================================
+
+Rel_U(sitMonitor, hmi, "推送态势/告警数据", "WebSocket")
+Rel_U(infoFusion, hmi, "推送融合态势", "WebSocket")
+Rel_U(sitMonitor, hmi, "提供历史态势数据", "API")
+
+' ============================================================
+' 对平台服务层
+' ============================================================
+
+Rel_D(infoFusion, knowledgeRule, "查询目标特征知识", "API")
+Rel_D(threatAnalysis, knowledgeRule, "查询威胁特征", "API")
+
+Rel_D(infoFusion, dbMgmt, "读写融合/航迹数据", "SQL/时空查询")
+Rel_D(sitAnalysis, dbMgmt, "读取地理信息数据", "空间查询")
+Rel_D(sitMonitor, dbMgmt, "写入态势快照/告警", "SQL")
+
+Rel_D(sitMonitor, msgBus, "发布态势变化通知", "Pub/Sub")
+Rel_D(threatAnalysis, msgBus, "发布威胁告警", "Pub/Sub")
+
+@enduml

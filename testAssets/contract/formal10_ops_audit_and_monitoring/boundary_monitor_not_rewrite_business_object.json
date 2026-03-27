@@ -1,0 +1,13 @@
+{
+  "trace_id": "trace-formal10-boundary-001",
+  "schema_version": "formal10.v1",
+  "event_time": "2026-03-23T11:40:00Z",
+  "source_id": "monitorlog",
+  "topic": "monitor_metric",
+  "monitor_metric": {
+    "metric_name": "battle_plan_latency_ms",
+    "metric_value": 74,
+    "source_domain": "battlectrl"
+  },
+  "boundary_rule": "Monitoring objects are read-only observational outputs and must not rewrite business domain authoritative objects."
+}

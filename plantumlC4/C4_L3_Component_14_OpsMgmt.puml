@@ -1,0 +1,72 @@
+@startuml C4_L3_Component_14_OpsMgmt
+!include <C4/C4_Component>
+
+title 运维管理分系统 - C4 Level 3 组件图
+caption 运维保障层 / 运维管理分系统
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+' ============================================================
+' 外部依赖
+' ============================================================
+
+Person(sysAdmin, "系统管理员", "系统配置与维护")
+Person(opsStaff, "运维人员", "运维任务执行")
+Container(hmi, "人机交互分系统", "Web前端/GIS引擎", "系统配置与运维任务界面")
+Container(monitorLog, "监控与日志分系统", "监控服务", "系统运行状态")
+ContainerDb(dbMgmt, "数据库管理分系统", "数据库集群", "配置/任务/记录数据")
+
+' ============================================================
+' 运维管理分系统边界
+' ============================================================
+
+Container_Boundary(opsMgmt, "运维管理分系统") {
+
+    Component(selfCheck, "系统自检与初始化模块", "自检引擎", "系统启动自检\n组件依赖检查\n环境一致性校验\n系统初始化流程\n自检报告生成")
+
+    Component(configMgmt, "配置管理模块", "配置中心", "运行参数配置\n配置项版本管理\n配置变更审批\n配置生效与回滚\n环境配置隔离")
+
+    Component(opsTask, "运维任务管理模块", "任务管理", "运维任务创建与分配\n运维任务执行跟踪\n运维任务审批")
+
+    Component(scriptJob, "脚本与作业管理模块", "作业调度", "运维脚本管理\n定时作业管理\n批量作业执行\n作业执行记录")
+
+    Component(opsRecord, "操作记录模块", "记录管理", "运维操作日志\n变更记录管理\n操作回溯查询")
+
+    Component(opsProcess, "运维流程管理模块", "流程引擎", "变更管理流程\n故障处理流程\n应急预案管理\n运维SOP管理")
+}
+
+' ============================================================
+' 外部关系
+' ============================================================
+
+Rel_D(sysAdmin, hmi, "系统配置操作")
+Rel_D(opsStaff, hmi, "运维任务操作")
+Rel_D(hmi, configMgmt, "配置管理操作", "REST API")
+Rel_D(hmi, opsTask, "运维任务操作", "REST API")
+Rel_D(hmi, scriptJob, "脚本作业管理", "REST API")
+
+' ============================================================
+' 内部模块交互
+' ============================================================
+
+Rel_R(selfCheck, configMgmt, "自检→加载配置")
+Rel_D(opsTask, scriptJob, "任务→触发脚本执行")
+Rel_D(opsTask, opsProcess, "任务→遵循运维流程")
+Rel_R(configMgmt, opsRecord, "记录配置变更")
+Rel_R(opsTask, opsRecord, "记录任务操作")
+Rel_R(scriptJob, opsRecord, "记录作业执行")
+Rel_D(opsProcess, opsRecord, "记录流程执行")
+
+Rel_D(selfCheck, monitorLog, "上报自检结果")
+
+' ============================================================
+' 数据存储
+' ============================================================
+
+Rel_D(configMgmt, dbMgmt, "读写配置数据", "SQL")
+Rel_D(opsTask, dbMgmt, "读写任务数据", "SQL")
+Rel_D(opsRecord, dbMgmt, "写入操作记录", "SQL")
+Rel_D(opsProcess, dbMgmt, "读写流程数据", "SQL")
+
+@enduml

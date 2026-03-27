@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package bms.schema.audit;
+
+option java_multiple_files = true;
+option java_package = "com.bms.schema.audit";
+option csharp_namespace = "Bms.Schema.Audit";
+
+import "bms/schema/common.proto";
+
+message AuditEvent {
+  bms.schema.common.CommonHeader header = 1;
+  string audit_id = 2;
+  string actor_id = 3;
+  string actor_type = 4;
+  string action = 5;
+  string target_type = 6;
+  string target_id = 7;
+  string result = 8;
+  string detail = 9;
+}
+
+message SecurityAlert {
+  bms.schema.common.CommonHeader header = 1;
+  string alert_id = 2;
+  string alert_type = 3;
+  bms.schema.common.ExceptionSeverity severity = 4;
+  string source_component = 5;
+  string detail = 6;
+}

@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package bms.schema.simulation;
+
+option java_multiple_files = true;
+option java_package = "com.bms.schema.simulation";
+option csharp_namespace = "Bms.Schema.Simulation";
+
+import "bms/schema/common.proto";
+
+enum ScenarioControlAction {
+  SCENARIO_CONTROL_ACTION_UNKNOWN = 0;
+  SCENARIO_CONTROL_ACTION_START = 1;
+  SCENARIO_CONTROL_ACTION_PAUSE = 2;
+  SCENARIO_CONTROL_ACTION_STOP = 3;
+}
+
+enum AdjudicationResult {
+  ADJUDICATION_RESULT_UNKNOWN = 0;
+  ADJUDICATION_RESULT_MISS = 1;
+  ADJUDICATION_RESULT_SUPPRESSION = 2;
+  ADJUDICATION_RESULT_DAMAGE = 3;
+  ADJUDICATION_RESULT_DESTROY = 4;
+}
+
+message ScenarioLoadCommand {
+  bms.schema.common.CommonHeader header = 1;
+  string scenario_id = 2;
+  string scenario_name = 3;
+  string scenario_uri = 4;
+}
+
+message ScenarioControlCommand {
+  bms.schema.common.CommonHeader header = 1;
+  string scenario_id = 2;
+  ScenarioControlAction control_action = 3;
+}
+
+message ClockTick {
+  bms.schema.common.CommonHeader header = 1;
+  string tick_id = 2;
+  int64 sim_time_utc_ms = 3;
+  double sim_time_scale = 4;
+}
+
+message SimFlightState {
+  bms.schema.common.CommonHeader header = 1;
+  string sim_platform_id = 2;
+  double latitude = 3;
+  double longitude = 4;
+  double altitude_m = 5;
+  double speed_mps = 6;
+  double heading_deg = 7;
+}
+
+message SimSensorState {
+  bms.schema.common.CommonHeader header = 1;
+  string sim_sensor_id = 2;
+  string sensor_mode = 3;
+  bool online = 4;
+}
+
+message SimWeaponState {
+  bms.schema.common.CommonHeader header = 1;
+  string sim_weapon_id = 2;
+  string weapon_mode = 3;
+  int32 remaining_count = 4;
+}
+
+message TargetTruth {
+  bms.schema.common.CommonHeader header = 1;
+  string target_id = 2;
+  string target_type = 3;
+  double latitude = 4;
+  double longitude = 5;
+  double altitude_m = 6;
+  double speed_mps = 7;
+  double heading_deg = 8;
+}
+
+message WeaponAdjudication {
+  bms.schema.common.CommonHeader header = 1;
+  string engagement_id = 2;
+  AdjudicationResult adjudication_result = 3;
+  double damage_score = 4;
+  string detail = 5;
+}

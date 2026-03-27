@@ -1,0 +1,16 @@
+{
+  "trace_id": "trace-formal09-abnormal-001",
+  "schema_version": "formal09.v1",
+  "event_time": "2026-03-23T11:20:00Z",
+  "source_id": "simulation.clock",
+  "topic": "sim_clock_alert",
+  "clock_tick": {
+    "tick_id": "tick-002",
+    "sim_time": "2026-03-23T11:20:00Z",
+    "drift_ms": 1450
+  },
+  "alert": {
+    "severity": "HIGH",
+    "reason": "simulation_clock_drift"
+  }
+}

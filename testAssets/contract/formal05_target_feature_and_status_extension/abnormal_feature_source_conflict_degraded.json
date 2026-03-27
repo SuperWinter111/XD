@@ -1,0 +1,22 @@
+{
+  "trace_id": "trace-formal05-abnormal-001",
+  "schema_version": "formal05.v1",
+  "event_time": "2026-03-23T10:20:00Z",
+  "source_id": "sitmgmt.feature",
+  "topic": "target_feature_snapshot",
+  "target_feature_snapshot": {
+    "target_id": "target-102",
+    "feature_signature": "conflicted",
+    "source_list": [
+      "eo-sensor-02",
+      "radar-07"
+    ],
+    "degraded_reason": "source_conflict"
+  },
+  "target_status": {
+    "target_id": "target-102",
+    "mobility_status": "UNCERTAIN",
+    "identity_status": "UNKNOWN",
+    "damage_state": "UNKNOWN"
+  }
+}

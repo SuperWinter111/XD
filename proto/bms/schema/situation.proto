@@ -1,0 +1,127 @@
+syntax = "proto3";
+
+package bms.schema.situation;
+
+option java_multiple_files = true;
+option java_package = "com.bms.schema.situation";
+option csharp_namespace = "Bms.Schema.Situation";
+
+import "bms/schema/common.proto";
+
+enum TargetCamp {
+  TARGET_CAMP_UNKNOWN = 0;
+  TARGET_CAMP_FOE = 1;
+  TARGET_CAMP_FRIEND = 2;
+  TARGET_CAMP_NEUTRAL = 3;
+  TARGET_CAMP_UNIDENTIFIED = 4;
+}
+
+enum TimeSensitivity {
+  TIME_SENSITIVITY_UNKNOWN = 0;
+  TIME_SENSITIVITY_NON_TIME_SENSITIVE = 1;
+  TIME_SENSITIVITY_TIME_SENSITIVE = 2;
+}
+
+enum TargetMobility {
+  TARGET_MOBILITY_UNKNOWN = 0;
+  TARGET_MOBILITY_FIXED = 1;
+  TARGET_MOBILITY_MOBILE = 2;
+}
+
+enum ProtectionCapability {
+  PROTECTION_CAPABILITY_UNKNOWN = 0;
+  PROTECTION_CAPABILITY_NONE = 1;
+  PROTECTION_CAPABILITY_ARMORED = 2;
+  PROTECTION_CAPABILITY_CONCRETE_FORTIFIED = 3;
+}
+
+enum CoordinateSystemType {
+  COORDINATE_SYSTEM_UNKNOWN = 0;
+  COORDINATE_SYSTEM_GEODETIC = 1;
+}
+
+enum DamageStatus {
+  DAMAGE_STATUS_UNKNOWN = 0;
+  DAMAGE_STATUS_INTACT = 1;
+  DAMAGE_STATUS_LIGHT = 2;
+  DAMAGE_STATUS_MEDIUM = 3;
+  DAMAGE_STATUS_HEAVY = 4;
+  DAMAGE_STATUS_DESTROYED = 5;
+}
+
+enum ThreatReasonCode {
+  THREAT_REASON_CODE_UNKNOWN = 0;
+  THREAT_REASON_CODE_HIGH_PRIORITY_TARGET = 1;
+  THREAT_REASON_CODE_TIME_SENSITIVE_TARGET = 2;
+  THREAT_REASON_CODE_HIGH_MOBILITY_TARGET = 3;
+  THREAT_REASON_CODE_HIGH_THREAT_WEAPON = 4;
+  THREAT_REASON_CODE_AIR_DEFENSE_THREAT = 5;
+  THREAT_REASON_CODE_LINKED_TO_MISSION_OBJECTIVE = 6;
+  THREAT_REASON_CODE_ENTERING_PROTECTED_AREA = 7;
+  THREAT_REASON_CODE_ESCALATING_BEHAVIOR = 8;
+}
+
+message ThreatReasonRef {
+  ThreatReasonCode reason_code = 1;
+  string source_rule_or_template_id = 2;
+  string evidence_ref = 3;
+  double confidence = 4;
+}
+
+message FusedTrack {
+  bms.schema.common.CommonHeader header = 1;
+  string track_id = 2;
+  string target_type = 3;
+  double latitude = 4;
+  double longitude = 5;
+  double altitude_m = 6;
+  double speed_mps = 7;
+  double heading_deg = 8;
+  double confidence = 9;
+  repeated string source_refs = 10;
+}
+
+message ThreatAssessment {
+  bms.schema.common.CommonHeader header = 1;
+  string threat_id = 2;
+  string track_id = 3;
+  int32 threat_level = 4;
+  int32 priority_rank = 5;
+  string threat_reason = 6;
+  repeated ThreatReasonRef reasons = 7;
+}
+
+message TargetFeatureSnapshot {
+  bms.schema.common.CommonHeader header = 1;
+  string feature_id = 2;
+  string track_id = 3;
+  string target_name = 4;
+  string target_type = 5;
+  string target_source = 6;
+  TargetCamp camp = 7;
+  TimeSensitivity time_sensitivity = 8;
+  TargetMobility mobility = 9;
+  ProtectionCapability protection_capability = 10;
+  string country_code = 11;
+  string detection_method = 12;
+  double detection_range_km = 13;
+  double horizontal_detection_angle_deg = 14;
+  double vertical_detection_angle_deg = 15;
+  double weapon_attack_height_m = 16;
+  double weapon_attack_distance_km = 17;
+  double length_m = 18;
+  double width_m = 19;
+  double height_m = 20;
+}
+
+message TargetStatus {
+  bms.schema.common.CommonHeader header = 1;
+  string status_id = 2;
+  string track_id = 3;
+  string target_source = 4;
+  CoordinateSystemType coordinate_system = 5;
+  double latitude = 6;
+  double longitude = 7;
+  double altitude_m = 8;
+  DamageStatus damage_status = 9;
+}

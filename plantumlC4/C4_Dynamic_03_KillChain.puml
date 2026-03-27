@@ -1,0 +1,87 @@
+@startuml C4_Dynamic_KillChain
+!include <C4/C4_Dynamic>
+
+title BMS系统 - Dynamic Diagram 杀伤链闭环流程 (OODA)
+caption 发现→定位→决策→打击→评估 完整杀伤链闭环
+
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+' ============================================================
+' 参与者
+' ============================================================
+
+Person(commander, "业务管理人员", "指挥员/决策者")
+System_Ext(uavSystem, "无人平台任务系统", "实验室阶段可由数字模型替代，工程阶段经地面站/任务系统接入实机")
+
+Container(enhanceUnit, "协同增强单元分系统", "边缘代理", "")
+Container(sitMgmt, "态势管理分系统", "业务服务", "")
+Container(hmi, "人机交互分系统", "前端", "")
+Container(battleCtrl, "交战管控分系统", "业务服务", "")
+Container(resMgmt, "资源管理分系统", "业务服务", "")
+Container(knowledgeRule, "知识与规则管理分系统", "规则引擎", "")
+Container(taskMgmt, "任务管理分系统", "业务服务", "")
+Container(msgBus, "数据交换与消息服务分系统", "消息中间件", "")
+ContainerDb(dbMgmt, "数据库管理分系统", "数据库集群", "")
+
+' ============================================================
+' OODA Loop 动态流程
+' ============================================================
+
+' ===== O: Observe（观察/发现） =====
+Rel(uavSystem, enhanceUnit, "1. [KC-01] 传感器探测到目标", "数据链")
+Rel(enhanceUnit, enhanceUnit, "2. [KC-02] 目标检测与识别\n(AI能力增强)")
+Rel(enhanceUnit, msgBus, "3. [KC-03] 上报目标数据", "Pub/Sub")
+Rel(msgBus, sitMgmt, "4. [KC-04] 分发目标数据", "Subscribe")
+
+' ===== O: Orient（判断/定向） =====
+Rel(sitMgmt, sitMgmt, "5. [KC-05] 信息融合\n(航迹关联/属性融合)")
+Rel(sitMgmt, knowledgeRule, "6. [KC-06] 匹配目标特征库", "API")
+Rel(sitMgmt, sitMgmt, "7. [KC-07] 威胁等级评估\n威胁优先级排序")
+Rel(sitMgmt, hmi, "8. [KC-08] 推送威胁告警\n目标态势更新", "WebSocket")
+
+' ===== D: Decide（决策） =====
+Rel(commander, hmi, "9. [KC-09] 查看威胁目标\n进入临机决策面板")
+Rel(sitMgmt, taskMgmt, "10. [KC-10] 推送目标类型、目标状态与威胁态势", "API/事件")
+Rel(taskMgmt, taskMgmt, "11. [KC-11] 自动识别为杀伤链任务\n生成处置策略、任务分解链与任务约束")
+Rel(taskMgmt, knowledgeRule, "12. [KC-12] 查询任务模板、知识与约束规则", "API")
+Rel(taskMgmt, resMgmt, "13. [KC-13] 请求资源匹配与任务分配", "API")
+Rel(resMgmt, taskMgmt, "14. [KC-14] 返回资源可行性与分配结果", "API")
+Rel(taskMgmt, hmi, "15. [KC-15] 推送杀伤链任务分解与约束结果", "WebSocket")
+Rel(commander, hmi, "16. [KC-16] 人工可调整任务内容/约束后确认")
+Rel(hmi, taskMgmt, "17. [KC-17] 确认任务约束并下发", "REST API")
+Rel(taskMgmt, battleCtrl, "18. [KC-18] 下发杀伤链任务约束\n(而非末端执行计划)", "API")
+Rel(battleCtrl, knowledgeRule, "19. [KC-19] 加载交战规则\n匹配战术模板", "API")
+Rel(battleCtrl, resMgmt, "20. [KC-20] 查询打击资源\n(武器/平台能力)", "API")
+Rel(battleCtrl, battleCtrl, "21. [KC-21] 在任务约束内生成交战计划\n(航路/武器/传感器/协同)")
+Rel(battleCtrl, hmi, "22. [KC-22] 推送交战计划至决策面板", "WebSocket")
+Rel(commander, hmi, "23. [KC-23] 人工可调整计划内容并确认下发")
+
+' ===== A: Act（行动/打击） =====
+Rel(hmi, battleCtrl, "24. [KC-24] 下发计划确认指令", "REST API")
+Rel(battleCtrl, msgBus, "25. [KC-25] 发布交战计划", "Pub/Sub")
+Rel(msgBus, enhanceUnit, "26. [KC-26] 分发至边缘代理", "Subscribe")
+Rel(enhanceUnit, enhanceUnit, "27. [KC-27] 解析计划/转换航路/设置传感器模式")
+Rel(enhanceUnit, uavSystem, "28. [KC-28] 下发打击指令\n(航路/武器投放)", "数据链")
+Rel(uavSystem, uavSystem, "29. [KC-29] 机动至攻击阵位\n执行武器投放")
+
+' ===== A*: 执行中动态调整 =====
+Rel(uavSystem, enhanceUnit, "30. [KC-30] 上报执行状态与异常分类\n(资源/航路/链路/威胁/载荷/天气/禁飞区/敌情突变/平台失联)", "数据链")
+Rel(enhanceUnit, msgBus, "31. [KC-31] 发布执行状态与异常事件", "Pub/Sub")
+Rel(msgBus, battleCtrl, "32. [KC-32] 分发至交战管控", "Subscribe")
+Rel(battleCtrl, battleCtrl, "33. [KC-33] 判断是否可在任务约束内完成计划调整")
+Rel(battleCtrl, hmi, "34. [KC-34] 必要时人工可随时介入调整计划", "WebSocket")
+
+' ===== BDA: Battle Damage Assessment（毁伤评估） =====
+Rel(uavSystem, enhanceUnit, "35. [KC-35] 上报打击后传感器数据", "数据链")
+Rel(enhanceUnit, msgBus, "36. [KC-36] 发布打击效果数据", "Pub/Sub")
+Rel(msgBus, battleCtrl, "37. [KC-37] 接收效果数据", "Subscribe")
+Rel(battleCtrl, battleCtrl, "38. [KC-38] 打击效果评估\n目标毁伤评估")
+Rel(battleCtrl, dbMgmt, "39. [KC-39] 写入评估报告", "SQL")
+Rel(battleCtrl, hmi, "40. [KC-40] 推送毁伤评估结果", "WebSocket")
+
+' ===== 闭环判断 =====
+Rel(commander, hmi, "41. [KC-41] 查看毁伤评估\n判断是否二次打击或终止任务")
+Rel(battleCtrl, taskMgmt, "42. [KC-42] 上报交战效果\n→效能评估闭环", "API")
+
+@enduml

@@ -1,0 +1,25 @@
+{
+  "trace_id": "trace-formal08-normal-001",
+  "schema_version": "formal08.v1",
+  "event_time": "2026-03-23T11:00:00Z",
+  "source_id": "msgservice.registry",
+  "topic": "bms/core/ops/msg/delivery_receipt",
+  "topic_definition": {
+    "topic": "battle_plan",
+    "domain": "battle",
+    "payload_type": "BattlePlan",
+    "qos_profile": "reliable",
+    "topic_state": "ACTIVE",
+    "owner_team": "team-battlectrl",
+    "schema_uri": "proto://bms/schema/task.proto#BattlePlan",
+    "retention_ms": 604800000
+  },
+  "delivery_receipt": {
+    "receipt_id": "receipt-001",
+    "message_trace_id": "trace-formal08-normal-001",
+    "subscriber_endpoint_id": "enhanceunit.command-bridge",
+    "status": "SUCCEEDED",
+    "error_code": "NONE",
+    "delivered_at_utc_ms": 1774263600000
+  }
+}

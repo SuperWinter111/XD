@@ -1,0 +1,13 @@
+{
+  "sample_type": "abnormal",
+  "formal_id": "Formal 02",
+  "trace_id": "trace-formal02-abnormal-001",
+  "schema_version": "v1",
+  "event_time": "2026-03-20T09:11:00Z",
+  "source_id": "battlectrl.exception.detector",
+  "mission_id": "mission-001",
+  "task_package_id": "task-package-001",
+  "exception_code": "RESOURCE_LOST_BEYOND_TASK_BOUNDARY",
+  "requires_reconstruction": true,
+  "expected_action": "task_reconstruction"
+}

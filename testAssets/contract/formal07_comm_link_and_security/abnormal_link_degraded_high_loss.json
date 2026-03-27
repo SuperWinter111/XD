@@ -1,0 +1,14 @@
+{
+  "trace_id": "trace-formal07-abnormal-001",
+  "schema_version": "formal07.v1",
+  "event_time": "2026-03-23T10:45:00Z",
+  "source_id": "commnet.monitor",
+  "topic": "link_degraded",
+  "degradation_alert": {
+    "link_id": "link-002",
+    "packet_loss_pct": 27.4,
+    "latency_ms": 460,
+    "severity": "HIGH",
+    "trigger_threshold": "loss_gt_20pct"
+  }
+}

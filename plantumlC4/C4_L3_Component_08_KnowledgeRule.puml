@@ -1,0 +1,71 @@
+@startuml C4_L3_Component_08_KnowledgeRule
+!include <C4/C4_Component>
+
+title 知识与规则管理分系统 - C4 Level 3 组件图
+caption 平台服务层 / 知识与规则管理分系统
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+' ============================================================
+' 外部依赖容器
+' ============================================================
+
+Container(taskMgmt, "任务管理分系统", "业务服务", "查询任务模板/规则")
+Container(battleCtrl, "交战管控分系统", "业务服务", "查询战术模板/交战规则")
+Container(sitMgmt, "态势管理分系统", "业务服务", "查询目标特征知识")
+ContainerDb(dbMgmt, "数据库管理分系统", "数据库集群", "知识数据持久化")
+Container(hmi, "人机交互分系统", "Web前端/GIS引擎", "系统管理与知识库维护界面")
+
+' ============================================================
+' 知识与规则管理分系统边界
+' ============================================================
+
+Container_Boundary(knowledgeRule, "知识与规则管理分系统") {
+
+    Component(combatRules, "作战规则库管理模块", "规则管理", "作战规则创建与编辑\n规则版本管理\n交战规则配置\n规则有效性校验\n规则冲突检测")
+
+    Component(tacticTemplates, "战术模板库管理模块", "模板管理", "战术模板创建与编辑\n分类/版本管理\n适用条件配置\n模板效果评估")
+
+    Component(taskTemplates, "任务模板库管理模块", "模板管理", "任务模板创建与编辑\n分类/参数化配置\n版本管理")
+
+    Component(targetKnowledge, "目标特征知识库管理模块", "知识管理", "目标类型特征库维护\n目标识别特征更新\n行为模式库管理\n威胁特征库管理")
+
+    Component(doctrineLib, "战术条令库管理模块", "条令管理", "战术条令录入与管理\n适用场景配置\n条令版本管理")
+
+    Component(ruleEngine, "规则推理引擎模块", "推理引擎", "规则匹配引擎\n规则推理执行\n推理结果解释\n规则执行日志")
+}
+
+' ============================================================
+' 外部 → 知识规则 (查询)
+' ============================================================
+
+Rel_D(taskMgmt, taskTemplates, "查询任务模板", "API")
+Rel_D(taskMgmt, ruleEngine, "规则推理请求", "API")
+Rel_D(battleCtrl, tacticTemplates, "查询战术模板", "API")
+Rel_D(battleCtrl, combatRules, "加载交战规则", "API")
+Rel_D(sitMgmt, targetKnowledge, "查询目标特征", "API")
+Rel_D(hmi, combatRules, "维护作战规则", "REST API")
+Rel_D(hmi, tacticTemplates, "维护战术模板", "REST API")
+
+' ============================================================
+' 内部模块交互
+' ============================================================
+
+Rel_D(combatRules, ruleEngine, "提供规则集→推理执行")
+Rel_D(tacticTemplates, ruleEngine, "提供模板规则→推理匹配")
+Rel_R(doctrineLib, combatRules, "条令约束→规则校验")
+Rel_R(targetKnowledge, ruleEngine, "目标特征→推理支撑")
+
+' ============================================================
+' 知识规则 → 数据库
+' ============================================================
+
+Rel_D(combatRules, dbMgmt, "读写规则数据", "SQL")
+Rel_D(tacticTemplates, dbMgmt, "读写战术模板", "SQL")
+Rel_D(taskTemplates, dbMgmt, "读写任务模板", "SQL")
+Rel_D(targetKnowledge, dbMgmt, "读写目标特征数据", "SQL")
+Rel_D(doctrineLib, dbMgmt, "读写条令数据", "SQL")
+Rel_D(ruleEngine, dbMgmt, "写入推理日志", "SQL")
+
+@enduml

@@ -1,0 +1,99 @@
+@startuml C4_L3_Component_02_HMI
+!include <C4/C4_Component>
+
+title 人机交互分系统 - C4 Level 3 组件图
+caption 人机交互层 / 人机交互分系统
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+' ============================================================
+' 外部用户
+' ============================================================
+
+Person(bizManager, "业务管理人员", "指挥决策")
+Person(bizUser, "业务使用人员", "任务执行操作")
+Person(opsUser, "运维人员", "系统运维管理")
+
+' ============================================================
+' 内部依赖容器
+' ============================================================
+
+Container(taskMgmt, "任务管理分系统", "业务服务", "任务CRUD与方案管理")
+Container(sitMgmt, "态势管理分系统", "业务服务", "态势数据与威胁分析")
+Container(battleCtrl, "交战管控分系统", "业务服务", "交战计划与编队管控")
+Container(resMgmt, "资源管理分系统", "业务服务", "资源状态与调度")
+ContainerDb(dbMgmt, "数据库管理分系统", "数据库集群", "GIS/军标/历史数据")
+Container(authAudit, "用户权限与安全审计分系统", "安全服务", "认证与权限")
+
+' ============================================================
+' 人机交互分系统边界
+' ============================================================
+
+Container_Boundary(hmi, "人机交互分系统") {
+
+    Component(globalFrame, "全局框架模块", "前端框架", "主界面框架(多面板布局)\n全局状态栏(双时钟/链路状态)\n快捷工具栏")
+
+    Component(sitInteract, "态势管理交互模块", "GIS引擎/前端", "地图引擎(2D/3D渲染)\n地图类型管理(7+底图)\n图层管理(15+图层)\n战场迷雾(时效衰减)\n目标态势/威胁告警显示")
+
+    Component(plotMilSymbol, "标绘与军标交互模块", "前端组件", "军标库管理(国标+自定义)\n标绘工具(点/线/面/箭头)\n测量工具/标绘方案")
+
+    Component(taskInteract, "任务管理交互模块", "前端组件", "任务列表/创建/编辑\n任务进度(甘特图)\n方案对比与下发")
+
+    Component(battleInteract, "交战管控交互模块", "前端组件", "临机决策面板\n目标推控面板\n编队管控/航路交互\n武器打击展示")
+
+    Component(resInteract, "资源管理交互模块", "前端组件", "资源总览仪表盘\n资源列表与属性面板\n资源分配可视化")
+
+    Component(timeline, "时间轴与回放模块", "前端组件", "时间轴控制(播放/快进)\n态势回放\n关键事件标记")
+
+    Component(sysMgmtUI, "系统管理交互模块", "前端组件", "用户/权限/配置管理\n监控大屏/日志查询\n告警管理")
+}
+
+' ============================================================
+' 用户 → HMI
+' ============================================================
+
+Rel_D(bizManager, globalFrame, "操作系统主界面", "HTTPS/WS")
+Rel_D(bizUser, globalFrame, "操作系统主界面", "HTTPS/WS")
+Rel_D(opsUser, sysMgmtUI, "运维管理操作", "HTTPS")
+
+' ============================================================
+' 全局框架 → 子模块 (承载)
+' ============================================================
+
+Rel_D(globalFrame, sitInteract, "承载态势地图视图")
+Rel_D(globalFrame, plotMilSymbol, "承载标绘工具面板")
+Rel_D(globalFrame, taskInteract, "承载任务管理面板")
+Rel_D(globalFrame, battleInteract, "承载交战管控面板")
+Rel_D(globalFrame, resInteract, "承载资源管理面板")
+Rel_D(globalFrame, timeline, "承载时间轴面板")
+Rel_D(globalFrame, sysMgmtUI, "承载系统管理面板")
+
+' ============================================================
+' 模块间交互
+' ============================================================
+
+Rel_R(sitInteract, plotMilSymbol, "地图上叠加标绘")
+Rel_R(sitInteract, timeline, "提供态势回放数据")
+Rel_R(battleInteract, sitInteract, "联动地图显示目标/航路")
+Rel_R(resInteract, sitInteract, "联动地图定位资源")
+
+' ============================================================
+' HMI → 业务应用层
+' ============================================================
+
+Rel_D(taskInteract, taskMgmt, "任务CRUD/方案操作", "REST API")
+Rel_D(sitInteract, sitMgmt, "态势数据订阅与查询", "WebSocket/API")
+Rel_D(battleInteract, battleCtrl, "交战计划/编队控制", "REST API")
+Rel_D(resInteract, resMgmt, "资源查询与调度", "REST API")
+Rel_D(timeline, sitMgmt, "历史态势回放数据", "REST API")
+
+' ============================================================
+' HMI → 平台服务层
+' ============================================================
+
+Rel_D(sitInteract, dbMgmt, "读取GIS/地图瓦片", "只读查询")
+Rel_D(plotMilSymbol, dbMgmt, "读取军标库数据", "只读查询")
+Rel_D(sysMgmtUI, authAudit, "认证与权限校验", "API")
+
+@enduml

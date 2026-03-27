@@ -1,0 +1,19 @@
+{
+  "sample_type": "abnormal",
+  "formal_id": "Formal 03",
+  "topic": "bms/core/command/resource/allocation_committed",
+  "schema_version": "v1",
+  "trace_id": "trace-formal03-abnormal-001",
+  "event_time": "2026-03-20T09:21:00Z",
+  "source_id": "resmgmt.scheduler",
+  "request_id": "alloc-req-002",
+  "mission_id": "mission-001",
+  "accepted": true,
+  "allocated_resource_ids": [
+    "uav-001"
+  ],
+  "reserved_resource_ids": [
+    "weapon-001"
+  ],
+  "arbitration_reason": "partial_satisfaction_with_reservation"
+}

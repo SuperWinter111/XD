@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package bms.schema.ops;
+
+option java_multiple_files = true;
+option java_package = "com.bms.schema.ops";
+option csharp_namespace = "Bms.Schema.Ops";
+
+import "bms/schema/common.proto";
+
+message BackupSnapshot {
+  bms.schema.common.CommonHeader header = 1;
+  string backup_id = 2;
+  string store_name = 3;
+  string snapshot_uri = 4;
+  int64 created_at_utc_ms = 5;
+  string status = 6;
+}
+
+message DbMetricSnapshot {
+  bms.schema.common.CommonHeader header = 1;
+  string metric_id = 2;
+  string store_name = 3;
+  double cpu_ratio = 4;
+  double memory_ratio = 5;
+  double storage_ratio = 6;
+  double query_latency_ms = 7;
+  int64 collected_at_utc_ms = 8;
+}

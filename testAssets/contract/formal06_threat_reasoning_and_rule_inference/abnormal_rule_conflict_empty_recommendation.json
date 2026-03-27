@@ -1,0 +1,19 @@
+{
+  "trace_id": "trace-formal06-abnormal-001",
+  "schema_version": "formal06.v1",
+  "event_time": "2026-03-23T10:30:00Z",
+  "source_id": "knowledgerule.engine",
+  "topic": "recommendation_generated",
+  "inference_request": {
+    "request_id": "infer-002",
+    "context_target_id": "target-202",
+    "requested_by": "taskmgmt"
+  },
+  "recommendation_item": null,
+  "reason_trace": {
+    "trace_nodes": [
+      "conflicting_rule_outputs"
+    ],
+    "degraded_reason": "no_consensus"
+  }
+}

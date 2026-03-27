@@ -1,0 +1,24 @@
+{
+  "trace_id": "trace-formal08-normal-002",
+  "schema_version": "formal08.v1",
+  "event_time": "2026-03-23T11:12:00Z",
+  "source_id": "msgservice.subscription-governance",
+  "topic": "bms/core/ops/msg/subscription_bound",
+  "subscription_binding": {
+    "subscription_id": "sub-002",
+    "topic": "bms/core/ops/msg/delivery_receipt",
+    "subscriber_endpoint_id": "legacy-monitor",
+    "status": "REJECTED",
+    "status_reason": "schema_version_not_allowed"
+  },
+  "subscription_binding_audit_record": {
+    "audit_record_id": "sub-002:audit:trace-formal08-normal-002",
+    "trace_id": "trace-formal08-normal-002",
+    "subscription_id": "sub-002",
+    "topic": "bms/core/ops/msg/delivery_receipt",
+    "subscriber_endpoint_id": "legacy-monitor",
+    "status": "REJECTED",
+    "status_reason": "schema_version_not_allowed",
+    "recorded_at_utc_ms": 1774264320000
+  }
+}

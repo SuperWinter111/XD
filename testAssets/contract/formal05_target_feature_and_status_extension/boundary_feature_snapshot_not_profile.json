@@ -1,0 +1,15 @@
+{
+  "trace_id": "trace-formal05-boundary-001",
+  "schema_version": "formal05.v1",
+  "event_time": "2026-03-23T10:22:00Z",
+  "source_id": "sitmgmt.feature",
+  "topic": "target_feature_snapshot",
+  "target_feature_snapshot": {
+    "target_id": "target-103",
+    "feature_signature": "rotary-wing-light",
+    "source_list": [
+      "eo-sensor-09"
+    ]
+  },
+  "boundary_rule": "TargetFeatureSnapshot is a factual snapshot and must not be used as a long-lived knowledge profile object."
+}

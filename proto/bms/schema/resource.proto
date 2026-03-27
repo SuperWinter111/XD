@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package bms.schema.resource;
+
+option java_multiple_files = true;
+option java_package = "com.bms.schema.resource";
+option csharp_namespace = "Bms.Schema.Resource";
+
+import "bms/schema/common.proto";
+
+enum AllocationRequester {
+  ALLOCATION_REQUESTER_UNKNOWN = 0;
+  ALLOCATION_REQUESTER_TASK_MGMT = 1;
+  ALLOCATION_REQUESTER_BATTLE_CTRL = 2;
+  ALLOCATION_REQUESTER_HMI = 3;
+  ALLOCATION_REQUESTER_AUTOMATION = 4;
+}
+
+enum AllocationPolicy {
+  ALLOCATION_POLICY_UNKNOWN = 0;
+  ALLOCATION_POLICY_IMMEDIATE = 1;
+  ALLOCATION_POLICY_RESERVE_FIRST = 2;
+  ALLOCATION_POLICY_BEST_EFFORT = 3;
+  ALLOCATION_POLICY_REPLACE_ALLOWED = 4;
+}
+
+message AllocationTimeWindow {
+  int64 not_before_utc_ms = 1;
+  int64 not_after_utc_ms = 2;
+  int64 hold_duration_ms = 3;
+}
+
+message AllocationDemand {
+  string demand_id = 1;
+  string resource_type = 2;
+  uint32 required_count = 3;
+  repeated string required_capabilities = 4;
+  repeated string preferred_resource_ids = 5;
+  repeated string excluded_resource_ids = 6;
+  bool allow_degraded = 7;
+  bool reserve_only = 8;
+}
+
+message AllocationRequest {
+  bms.schema.common.CommonHeader header = 1;
+  string request_id = 2;
+  AllocationRequester requester = 3;
+  string task_id = 4;
+  string battle_plan_id = 5;
+  bms.schema.common.TriggerMode trigger_mode = 6;
+  repeated AllocationDemand demands = 7;
+  AllocationTimeWindow time_window = 8;
+  repeated AllocationPolicy policies = 9;
+}
+
+message ResourceStateSnapshot {
+  bms.schema.common.CommonHeader header = 1;
+  string resource_id = 2;
+  string resource_type = 3;
+  bms.schema.common.ResourceAvailability availability = 4;
+  double health_score = 5;
+  double energy_ratio = 6;
+  double link_quality_score = 7;
+  repeated string active_payloads = 8;
+  repeated string active_weapons = 9;
+}
+
+message AllocationDecision {
+  bms.schema.common.CommonHeader header = 1;
+  string allocation_id = 2;
+  string request_id = 3;
+  repeated string allocated_resource_ids = 4;
+  repeated string reserved_resource_ids = 5;
+  string arbitration_reason = 6;
+  bool accepted = 7;
+}

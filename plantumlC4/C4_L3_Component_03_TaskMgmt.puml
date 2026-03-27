@@ -1,0 +1,80 @@
+@startuml C4_L3_Component_03_TaskMgmt
+!include <C4/C4_Component>
+
+title 任务管理分系统 - C4 Level 3 组件图
+caption 业务应用层 / 任务管理分系统
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+' ============================================================
+' 外部依赖容器
+' ============================================================
+
+Container(hmi, "人机交互分系统", "Web前端/GIS引擎", "任务列表、方案交互、进度查看")
+Container(extInterface, "外部接口管理分系统", "接口服务", "上级指令转发")
+Container(battleCtrl, "交战管控分系统", "业务服务", "接收作战任务/回退任务重构")
+Container(resMgmt, "资源管理分系统", "业务服务", "资源匹配与分配")
+Container(msgBus, "数据交换与消息服务分系统", "消息中间件", "消息发布/订阅")
+Container(knowledgeRule, "知识与规则管理分系统", "规则引擎", "任务模板/规则")
+ContainerDb(dbMgmt, "数据库管理分系统", "数据库集群", "任务数据存储")
+
+' ============================================================
+' 任务管理分系统边界
+' ============================================================
+
+Container_Boundary(taskMgmt, "任务管理分系统") {
+
+    Component(cmdParse, "指令解析模块", "解析引擎", "指令格式配置\n多格式文书解析\n自然语言语义理解\n模糊参数推断补全\n指令有效性校验")
+
+    Component(taskDecomp, "任务分解模块", "推理引擎", "基于规则/模板的任务分解\n任务序列智能编排\n任务网络生成\n任务依赖/优先级分析\n任务起止时间与 MOE 约束建模")
+
+    Component(taskTemplate, "任务模板匹配模块", "匹配引擎", "任务类型自动识别\n模板相似度匹配\n参数自动填充\n历史任务复用")
+
+    Component(planGen, "作战方案生成模块", "规划引擎", "资源智能匹配与推荐\n多方案并行生成\n方案对比与评估\n资源冲突协调\n任务约束封装与下发")
+
+    Component(taskMonitor, "任务监控与调度模块", "调度引擎", "任务执行进度监控\n任务异常检测预警\n任务流程控制\n异常处置与应急处理")
+
+    Component(taskEval, "任务效能评估模块", "评估引擎", "杀伤链闭合效能评估\n任务完成度评估\n资源需求预测\n评估报告生成")
+}
+
+' ============================================================
+' 外部 → 任务管理
+' ============================================================
+
+Rel_D(hmi, cmdParse, "提交任务指令/参数", "REST API")
+Rel_D(hmi, planGen, "请求生成方案", "REST API")
+Rel_D(hmi, taskMonitor, "查看任务进度", "WebSocket")
+Rel_D(extInterface, cmdParse, "转发上级作战指令", "内部消息")
+
+' ============================================================
+' 内部模块交互 (核心流程: 指令→分解→模板→方案→监控→评估)
+' ============================================================
+
+Rel_R(cmdParse, taskDecomp, "解析后指令→任务分解")
+Rel_R(taskDecomp, taskTemplate, "子任务→模板匹配")
+Rel_D(taskTemplate, planGen, "匹配结果→方案生成")
+Rel_D(planGen, taskMonitor, "下发方案→执行监控")
+Rel_R(taskMonitor, taskDecomp, "执行异常→任务重构")
+Rel_D(taskMonitor, taskEval, "执行数据→效能评估")
+
+' ============================================================
+' 任务管理 → 外部容器
+' ============================================================
+
+Rel_D(planGen, resMgmt, "资源匹配与分配请求", "API")
+Rel_D(taskMonitor, battleCtrl, "下发作战任务", "API")
+Rel_D(battleCtrl, taskDecomp, "计划失配→任务重构请求", "API")
+Rel_D(taskTemplate, knowledgeRule, "查询任务模板库", "API")
+Rel_D(cmdParse, knowledgeRule, "查询指令规则", "API")
+Rel_D(taskMonitor, hmi, "不可自动重构→请求人工处理", "WebSocket")
+Rel_D(hmi, taskDecomp, "人工调整任务目标/约束", "REST API")
+
+Rel_D(taskMonitor, msgBus, "发布任务状态消息", "Pub/Sub")
+Rel_D(taskEval, msgBus, "发布评估结果", "Pub/Sub")
+
+Rel_D(planGen, dbMgmt, "读写方案数据", "SQL")
+Rel_D(taskMonitor, dbMgmt, "读写任务执行记录", "SQL")
+Rel_D(taskEval, dbMgmt, "写入评估报告", "SQL")
+
+@enduml

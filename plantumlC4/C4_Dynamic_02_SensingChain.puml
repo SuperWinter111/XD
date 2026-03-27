@@ -1,0 +1,75 @@
+@startuml C4_Dynamic_SensingChain
+!include <C4/C4_Dynamic>
+
+title BMS系统 - Dynamic Diagram 态势感知链路
+caption 从传感器数据采集到态势呈现的完整感知流程
+
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+' ============================================================
+' 参与者
+' ============================================================
+
+Person(operator, "业务使用人员", "态势查看")
+System_Ext(uavSystem, "无人平台任务系统", "实验室阶段可由数字模型替代，工程阶段经地面站/任务系统接入实机")
+System_Ext(khSystem, "KH协同系统", "协同态势数据")
+System_Ext(superiorCmd, "上级指控系统", "接收态势上报")
+
+Container(commNet, "通信组网分系统", "通信服务", "")
+Container(enhanceUnit, "协同增强单元分系统", "边缘代理", "")
+Container(extInterface, "外部接口管理分系统", "接口服务", "")
+Container(msgBus, "数据交换与消息服务分系统", "消息中间件", "")
+Container(sitMgmt, "态势管理分系统", "业务服务", "")
+Container(knowledgeRule, "知识与规则管理分系统", "规则引擎", "")
+ContainerDb(dbMgmt, "数据库管理分系统", "数据库集群", "")
+Container(hmi, "人机交互分系统", "前端/GIS引擎", "")
+
+' ============================================================
+' 动态流程 (带序号)
+' ============================================================
+
+' --- Phase 1: 数据采集 ---
+Rel(uavSystem, commNet, "1. [SC-01] 传感器原始数据上传", "数据链")
+Rel(commNet, enhanceUnit, "2. [SC-02] 通信链路数据转发")
+Rel(enhanceUnit, enhanceUnit, "3. [SC-03] 能力增强处理\n(目标检测/识别/定位)")
+Rel(enhanceUnit, msgBus, "4. [SC-04] 发布标准化目标数据", "Pub/Sub")
+
+' --- Phase 1b: 协同态势输入 ---
+Rel(khSystem, extInterface, "5. [SC-05] 协同态势数据", "协同数据链")
+Rel(extInterface, msgBus, "6. [SC-06] 转发协同态势", "Pub/Sub")
+
+' --- Phase 2: 数据预处理 ---
+Rel(msgBus, sitMgmt, "7. [SC-07] 分发原始态势数据", "Subscribe")
+Rel(sitMgmt, sitMgmt, "8. [SC-08] 数据清洗/校验/去重\n时间戳对齐/可信度评估")
+
+' --- Phase 3: 信息融合 ---
+Rel(sitMgmt, sitMgmt, "9. [SC-09] 信息提取(图像/文本/结构化)")
+Rel(sitMgmt, knowledgeRule, "10. [SC-10] 查询目标特征知识库", "API")
+Rel(sitMgmt, sitMgmt, "11. [SC-11] 点迹/航迹关联融合\n目标属性融合\n虚假目标滤除")
+Rel(sitMgmt, dbMgmt, "12. [SC-12] 写入融合航迹(时空库)", "时空查询")
+
+' --- Phase 4: 威胁与态势分析 ---
+Rel(sitMgmt, sitMgmt, "13. [SC-13] 威胁等级计算\n威胁聚类/优先级排序")
+Rel(sitMgmt, sitMgmt, "14. [SC-14] 战场环境分析\n(地形/天气/电磁)")
+Rel(sitMgmt, sitMgmt, "15. [SC-15] 战场态势分析\n(控制区/薄弱点/兵力对比)")
+
+' --- Phase 5: 态势推理 ---
+Rel(sitMgmt, sitMgmt, "16. [SC-16] 目标路径/行为意图预测\n编队战术意图预测\n态势演变趋势推演")
+
+' --- Phase 6: 监控告警 ---
+Rel(sitMgmt, sitMgmt, "17. [SC-17] 异常行为检测\n关键事件识别")
+Rel(sitMgmt, msgBus, "18. [SC-18] 发布威胁告警/态势变化", "Pub/Sub")
+
+' --- Phase 7: 态势呈现 ---
+Rel(sitMgmt, hmi, "19. [SC-19] 推送融合态势数据", "WebSocket")
+Rel(hmi, dbMgmt, "20. [SC-20] 加载GIS底图/地图瓦片", "空间查询")
+Rel(hmi, hmi, "21. [SC-21] 渲染态势显示\n(目标军标/航迹/威胁/战场迷雾)")
+Rel(operator, hmi, "22. [SC-22] 查看态势/筛选图层/回放")
+
+' --- Phase 8: 态势上报 ---
+Rel(sitMgmt, sitMgmt, "23. [SC-23] 生成战场态势简报")
+Rel(sitMgmt, extInterface, "24. [SC-24] 态势数据聚合", "API")
+Rel(extInterface, superiorCmd, "25. [SC-25] 态势信息上报", "军用数据链")
+
+@enduml

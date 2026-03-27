@@ -1,0 +1,12 @@
+{
+  "trace_id": "trace-formal11-boundary-001",
+  "schema_version": "formal11.v1",
+  "event_time": "2026-03-23T11:55:00Z",
+  "source_id": "bff.gateway",
+  "topic": "ui_dashboard_response",
+  "ui_dashboard_response": {
+    "view_id": "dashboard-main",
+    "refresh_time": "2026-03-23T11:55:00Z"
+  },
+  "boundary_rule": "BFF/HMI outputs are read-only aggregated view objects and must not be used to write back business authoritative state."
+}

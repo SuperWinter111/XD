@@ -1,0 +1,202 @@
+@startuml C4_L2_Container
+!include <C4/C4_Container>
+
+title BMS系统 - C4 Level 2 容器图
+
+LAYOUT_WITH_LEGEND()
+HIDE_STEREOTYPE()
+
+' ============================================================
+' 外部用户 (Persons) — 顶部
+' ============================================================
+
+Person(bizManager, "业务管理人员", "指挥决策")
+Person(bizUser, "业务使用人员", "任务操作")
+Person(opsUser, "运维人员", "运维管理")
+
+' ============================================================
+' 外部系统 — 上方(上级/横向/前后) + 下方(无人平台)
+' ============================================================
+
+System_Ext(superiorCmd, "上级指控系统", "指令/态势")
+System_Ext(planSystem, "筹划系统", "筹划输入")
+System_Ext(khSystem, "KH协同系统", "态势共享")
+System_Ext(kdSystem, "KD协同系统", "态势共享")
+System_Ext(analysisSystem, "数据分析系统", "战后分析")
+
+' ============================================================
+' BMS 系统边界
+' ============================================================
+
+System_Boundary(bms, "BMS系统") {
+
+    ' ==========================================================
+    ' L1 外部交互层
+    ' ==========================================================
+    Container_Boundary(layer1, "L1 外部交互层") {
+        Container(extInterface, "外部接口管理分系统", "接口服务", "上级/横向/前后接口适配\n协议管理、监控与熔断")
+    }
+
+    ' ==========================================================
+    ' L2 人机交互层
+    ' ==========================================================
+    Container_Boundary(layer2, "L2 人机交互层") {
+        Container(hmi, "人机交互分系统", "Web前端/GIS引擎", "全局框架、态势地图、标绘军标\n任务/交战/资源交互、时间轴回放、系统管理")
+    }
+
+    ' ==========================================================
+    ' L3 业务应用层
+    ' ==========================================================
+    Container_Boundary(layer3, "L3 业务应用层") {
+        Container(taskMgmt, "任务管理分系统", "业务服务", "指令解析、任务分解\n方案生成、监控调度")
+        Container(sitMgmt, "态势管理分系统", "业务服务", "数据融合、威胁分析\n态势推理与监控")
+        Container(battleCtrl, "交战管控分系统", "业务服务", "编队管理、交战计划\n执行监控、效果评估")
+        Container(resMgmt, "资源管理分系统", "业务服务", "资源注册、状态管理\n能力建模、调度")
+    }
+
+    ' ==========================================================
+    ' L4 平台服务层
+    ' ==========================================================
+    Container_Boundary(layer4, "L4 平台服务层") {
+        Container(msgBus, "数据交换与消息服务分系统", "消息中间件/DDS", "消息总线、分发\n可靠性、流控")
+        Container(knowledgeRule, "知识与规则管理分系统", "规则引擎", "作战规则、战术模板\n任务模板、推理引擎")
+        ContainerDb(dbMgmt, "数据库管理分系统", "数据库集群", "实时/历史/时空/GIS\n目标特征/情报")
+    }
+
+    ' ==========================================================
+    ' L5 通信与接入层
+    ' ==========================================================
+    Container_Boundary(layer5, "L5 通信与接入层") {
+        Container(commNet, "通信组网分系统", "通信服务", "链路/组网/协议管理\n通信安全、质量监控")
+        Container(enhanceUnit, "协同增强单元分系统", "边缘代理", "接入适配、平台代理\nAI能力增强\n协同任务执行")
+    }
+
+    ' ==========================================================
+    ' L6 运维保障层
+    ' ==========================================================
+    Container_Boundary(layer6, "L6 运维保障层") {
+        Container(authAudit, "用户权限与安全审计分系统", "安全服务", "认证、权限、审计")
+        Container(monitorLog, "监控与日志分系统", "监控服务", "监控、告警\n故障诊断、日志")
+        Container(opsMgmt, "运维管理分系统", "运维服务", "自检、配置\n运维任务")
+        Container(versionDeploy, "版本与部署管理分系统", "CI/CD服务", "版本、发布\nCI/CD")
+    }
+}
+
+' 底部外部系统
+    System_Ext(uavSystem, "无人平台任务系统", "实验室阶段可由无人平台数字模型替代\n工程阶段经地面站/任务系统接入实机平台")
+
+' ============================================================
+' 隐形连接: 强制严格纵向层级排列
+' ============================================================
+
+bizManager -[hidden]D-> extInterface
+extInterface -[hidden]D-> hmi
+hmi -[hidden]D-> taskMgmt
+taskMgmt -[hidden]D-> msgBus
+msgBus -[hidden]D-> commNet
+commNet -[hidden]D-> authAudit
+authAudit -[hidden]D-> uavSystem
+
+' 横向排列辅助
+bizManager -[hidden]R-> bizUser
+bizUser -[hidden]R-> opsUser
+planSystem -[hidden]R-> khSystem
+khSystem -[hidden]R-> superiorCmd
+superiorCmd -[hidden]R-> kdSystem
+kdSystem -[hidden]R-> analysisSystem
+
+taskMgmt -[hidden]R-> sitMgmt
+sitMgmt -[hidden]R-> battleCtrl
+battleCtrl -[hidden]R-> resMgmt
+
+msgBus -[hidden]R-> knowledgeRule
+knowledgeRule -[hidden]R-> dbMgmt
+
+commNet -[hidden]R-> enhanceUnit
+
+authAudit -[hidden]R-> monitorLog
+monitorLog -[hidden]R-> opsMgmt
+opsMgmt -[hidden]R-> versionDeploy
+
+' ============================================================
+' R1: 外部系统 ↔ 外部交互层
+' ============================================================
+
+Rel(superiorCmd, extInterface, "指令/态势", "军用数据链")
+Rel(planSystem, extInterface, "筹划输入", "")
+Rel(khSystem, extInterface, "态势共享", "协同数据链")
+Rel(kdSystem, extInterface, "态势共享", "协同数据链")
+Rel(extInterface, analysisSystem, "数据输出", "")
+
+' ============================================================
+' R2: 用户 → HMI层
+' ============================================================
+
+Rel(bizManager, hmi, "指挥决策", "HTTPS")
+Rel(bizUser, hmi, "任务操作", "HTTPS")
+Rel(opsUser, hmi, "运维操作", "HTTPS")
+
+' ============================================================
+' R3: HMI → 业务层
+' ============================================================
+
+Rel(hmi, taskMgmt, "任务操作", "API")
+Rel(hmi, sitMgmt, "态势订阅与回放", "WS/API")
+Rel(hmi, battleCtrl, "交战操作", "API")
+Rel(hmi, resMgmt, "资源操作", "API")
+
+' ============================================================
+' R4: 业务层内部交互 (横向)
+' ============================================================
+
+Rel_R(taskMgmt, battleCtrl, "下发任务")
+Rel_L(battleCtrl, sitMgmt, "获取态势")
+Rel_R(taskMgmt, resMgmt, "资源匹配")
+
+' ============================================================
+' R5: 业务层 → 平台服务层 (纵向)
+' ============================================================
+
+Rel(taskMgmt, msgBus, "Pub/Sub")
+Rel(sitMgmt, msgBus, "Pub/Sub")
+Rel(battleCtrl, msgBus, "Pub/Sub")
+Rel(resMgmt, msgBus, "Pub/Sub")
+
+Rel(taskMgmt, knowledgeRule, "查询模板")
+Rel(battleCtrl, knowledgeRule, "查询规则")
+
+Rel(taskMgmt, dbMgmt, "读写数据")
+Rel(sitMgmt, dbMgmt, "读写数据")
+Rel(battleCtrl, dbMgmt, "读写数据")
+Rel(resMgmt, dbMgmt, "读写数据")
+
+' ============================================================
+' R6: HMI → 平台服务层
+' ============================================================
+
+Rel(hmi, authAudit, "认证与权限校验", "API")
+Rel(hmi, dbMgmt, "GIS/军标/回放数据查询", "只读服务")
+
+' ============================================================
+' R7: 外部交互层 → 消息总线
+' ============================================================
+
+Rel(extInterface, msgBus, "转发外部数据")
+
+' ============================================================
+' R8: 通信接入层
+' ============================================================
+
+Rel(enhanceUnit, msgBus, "上报目标/状态/执行结果")
+Rel(commNet, msgBus, "转发通信数据")
+Rel(commNet, uavSystem, "通信链路", "数据链")
+Rel(enhanceUnit, uavSystem, "指令/状态", "地面站协议/数字模型接口")
+
+' ============================================================
+' R9: 运维保障层 (跨层)
+' ============================================================
+
+Rel(authAudit, hmi, "认证权限")
+Rel(monitorLog, msgBus, "采集监控")
+
+@enduml

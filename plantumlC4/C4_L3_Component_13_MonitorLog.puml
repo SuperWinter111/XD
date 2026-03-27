@@ -1,0 +1,86 @@
+@startuml C4_L3_Component_13_MonitorLog
+!include <C4/C4_Component>
+
+title 监控与日志分系统 - C4 Level 3 组件图
+caption 运维保障层 / 监控与日志分系统
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+' ============================================================
+' 外部依赖
+' ============================================================
+
+Person(opsStaff, "运维人员", "监控查看/故障处理")
+Container(hmi, "人机交互分系统", "Web前端/GIS引擎", "监控大屏、日志查询与告警处置")
+Container(msgBus, "数据交换与消息服务分系统", "消息中间件", "消息吞吐指标")
+Container(dbMonitor, "数据库管理分系统", "数据库集群", "数据库监控指标")
+Container(commQuality, "通信组网分系统", "通信服务", "通信监控数据")
+Container(authAudit, "用户权限与安全审计分系统", "安全服务", "安全事件告警")
+ContainerDb(dbMgmtStore, "数据库管理分系统", "数据库集群", "日志/监控数据存储")
+
+' ============================================================
+' 监控与日志分系统边界
+' ============================================================
+
+Container_Boundary(monitorLog, "监控与日志分系统") {
+
+    Component(infraMonitor, "基础设施监控模块", "基础监控", "服务器资源监控(CPU/内存/磁盘/网络)\n网络设备监控\n存储设备监控\n硬件故障检测")
+
+    Component(appMonitor, "应用性能监控模块", "APM", "服务响应时间监控\n吞吐量监控\n可用性监控\n错误率监控\n调用链追踪")
+
+    Component(bizMonitor, "业务健康监控模块", "业务监控", "业务指标监控\n业务流程健康度评估\n关键业务告警")
+
+    Component(alertMgmt, "运行告警管理模块", "告警引擎", "告警规则配置\n告警级别管理\n告警通知管理\n告警抑制与收敛\n告警升级处理")
+
+    Component(faultDiag, "故障诊断模块", "诊断引擎", "故障根因分析\n故障关联分析\n故障处置建议\n故障知识库管理")
+
+    Component(logCollect, "日志采集与存储模块", "日志采集", "多源日志采集\n日志格式标准化\n日志分级存储\n保留策略管理")
+
+    Component(logAnalysis, "日志查询与分析模块", "日志分析", "日志全文检索\n聚合分析\n日志可视化\n关联分析")
+
+    Component(logAlert, "日志告警模块", "日志告警", "异常日志检测\n告警规则配置\n故障日志自动分类\n告警通知")
+}
+
+' ============================================================
+' 外部数据输入
+' ============================================================
+
+Rel_D(msgBus, appMonitor, "消息中间件指标")
+Rel_D(dbMonitor, infraMonitor, "数据库监控指标")
+Rel_D(commQuality, infraMonitor, "通信监控数据")
+Rel_D(authAudit, logCollect, "安全审计日志")
+
+' ============================================================
+' 内部模块交互
+' ============================================================
+
+Rel_R(infraMonitor, alertMgmt, "基础设施告警")
+Rel_R(appMonitor, alertMgmt, "应用性能告警")
+Rel_R(bizMonitor, alertMgmt, "业务告警")
+Rel_D(alertMgmt, faultDiag, "告警→故障诊断")
+
+Rel_D(logCollect, logAnalysis, "存储日志→查询分析")
+Rel_R(logAnalysis, logAlert, "分析结果→日志告警")
+Rel_R(logAlert, alertMgmt, "日志告警→统一告警")
+
+Rel_R(faultDiag, logAnalysis, "关联日志分析")
+
+' ============================================================
+' 输出
+' ============================================================
+
+Rel_U(alertMgmt, hmi, "推送告警信息", "WebSocket")
+Rel_U(infraMonitor, hmi, "推送监控大屏数据", "WebSocket")
+Rel_U(logAnalysis, hmi, "提供日志查询", "REST API")
+Rel_D(opsStaff, hmi, "查看监控/处理告警")
+
+' ============================================================
+' 数据持久化
+' ============================================================
+
+Rel_D(logCollect, dbMgmtStore, "存储日志数据", "SQL/时序DB")
+Rel_D(alertMgmt, dbMgmtStore, "存储告警记录", "SQL")
+Rel_D(faultDiag, dbMgmtStore, "存储诊断记录", "SQL")
+
+@enduml

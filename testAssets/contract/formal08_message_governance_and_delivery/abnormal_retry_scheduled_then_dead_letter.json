@@ -1,0 +1,27 @@
+{
+  "trace_id": "trace-formal08-abnormal-002",
+  "schema_version": "formal08.v1",
+  "event_time": "2026-03-23T11:15:00Z",
+  "source_id": "msgservice.retry",
+  "topic": "bms/core/ops/msg/dead_letter",
+  "retry_schedule_entry": {
+    "schedule_id": "trace-formal08-abnormal-002:retry:2",
+    "trace_id": "trace-formal08-abnormal-002",
+    "topic": "bms/core/ops/msg/delivery_receipt",
+    "payload_type": "DeliveryReceipt",
+    "failure_reason": "TARGET_ENDPOINT_UNREACHABLE",
+    "retry_count": 2,
+    "scheduled_at_utc_ms": 1774264500000,
+    "next_attempt_at_utc_ms": 1774264501000
+  },
+  "dead_letter_record": {
+    "dead_letter_id": "dead-letter-004",
+    "original_topic": "bms/core/ops/msg/delivery_receipt",
+    "payload_type": "DeliveryReceipt",
+    "message_trace_id": "trace-formal08-abnormal-002",
+    "failure_reason": "TARGET_ENDPOINT_UNREACHABLE",
+    "retry_count": 3,
+    "last_attempt_utc_ms": 1774264560000
+  },
+  "abnormal_rule": "A retryable failure may first produce a schedule entry, but after retry exhaustion it must transition to dead letter."
+}

@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package bms.schema.task;
+
+option java_multiple_files = true;
+option java_package = "com.bms.schema.task";
+option csharp_namespace = "Bms.Schema.Task";
+
+import "bms/schema/common.proto";
+
+enum ResourceRequirementType {
+  RESOURCE_REQUIREMENT_UNKNOWN = 0;
+  RESOURCE_REQUIREMENT_PLATFORM = 1;
+  RESOURCE_REQUIREMENT_PAYLOAD = 2;
+  RESOURCE_REQUIREMENT_WEAPON = 3;
+  RESOURCE_REQUIREMENT_LINK = 4;
+  RESOURCE_REQUIREMENT_CAPABILITY = 5;
+}
+
+enum CoverageConstraintType {
+  COVERAGE_CONSTRAINT_UNKNOWN = 0;
+  COVERAGE_CONSTRAINT_SPATIAL = 1;
+  COVERAGE_CONSTRAINT_TEMPORAL = 2;
+  COVERAGE_CONSTRAINT_CONTINUITY = 3;
+  COVERAGE_CONSTRAINT_REVISIT = 4;
+}
+
+message ResourcePrerequisite {
+  string requirement_id = 1;
+  ResourceRequirementType requirement_type = 2;
+  string target_type = 3;
+  uint32 min_count = 4;
+  repeated string required_capabilities = 5;
+  bool is_mandatory = 6;
+}
+
+message CoverageConstraint {
+  string constraint_id = 1;
+  CoverageConstraintType constraint_type = 2;
+  string region_ref = 3;
+  int64 min_duration_ms = 4;
+  int64 revisit_interval_ms = 5;
+  double min_coverage_ratio = 6;
+  bool continuous_required = 7;
+}
+
+message MissionCommand {
+  bms.schema.common.CommonHeader header = 1;
+  string command_id = 2;
+  string command_source = 3;
+  string command_text = 4;
+  map<string, string> raw_params = 5;
+}
+
+message TaskConstraint {
+  bms.schema.common.CommonHeader header = 1;
+  string task_id = 2;
+  bms.schema.common.TaskType task_type = 3;
+  int64 start_time_utc_ms = 4;
+  int64 end_time_utc_ms = 5;
+  repeated string dependency_task_ids = 6;
+  repeated string moe_targets = 7;
+  repeated ResourcePrerequisite resource_prerequisites = 8;
+  repeated CoverageConstraint coverage_constraints = 9;
+}
+
+message TaskPackage {
+  bms.schema.common.CommonHeader header = 1;
+  string task_package_id = 2;
+  string task_scheme_id = 3;
+  TaskConstraint constraint = 4;
+  repeated string task_node_ids = 5;
+  repeated string allocation_ids = 6;
+  bms.schema.common.TriggerMode trigger_mode = 7;
+}

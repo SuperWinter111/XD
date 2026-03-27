@@ -1,0 +1,15 @@
+{
+  "trace_id": "trace-formal07-normal-001",
+  "schema_version": "formal07.v1",
+  "event_time": "2026-03-23T10:40:00Z",
+  "source_id": "commnet.monitor",
+  "topic": "link_quality",
+  "link_quality_snapshot": {
+    "link_id": "link-001",
+    "from_node": "nano-a",
+    "to_node": "uav-01",
+    "packet_loss_pct": 0.6,
+    "latency_ms": 18,
+    "quality_grade": "GOOD"
+  }
+}

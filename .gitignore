@@ -1,0 +1,33 @@
+.venv/
+
+# CMake and build outputs
+build/
+implementation/build/
+**/CMakeFiles/
+**/Testing/
+**/x64/
+cmake_install.cmake
+CMakeCache.txt
+CTestTestfile.cmake
+
+# Visual Studio generated files
+.vs/
+*.VC.db
+*.VC.opendb
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Generic binaries and logs
+*.obj
+*.pdb
+*.ilk
+*.exe
+*.dll
+*.lib
+*.log
+
+# Python cache
+__pycache__/
+*.pyc

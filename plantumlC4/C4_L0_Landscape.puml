@@ -1,0 +1,118 @@
+@startuml C4_L0_Landscape
+!include <C4/C4_Context>
+
+title BMS系统 - System Landscape Diagram（系统全景图）
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+' ============================================================
+' 用户角色
+' ============================================================
+
+Person(bizManager, "业务管理人员", "指挥决策、计划审批")
+Person(bizUser, "业务使用人员", "任务执行、态势查看")
+Person(sysAdmin, "系统管理员", "系统配置与维护")
+Person(opsStaff, "运维人员", "监控运维与故障处理")
+Person(devTester, "开发/测试人员", "构建部署与测试")
+Person(dba, "数据库管理员", "数据库运维")
+Person_Ext(uavVendor, "无人平台厂商", "平台接入与技术支持")
+Person_Ext(commVendor, "通信厂商", "通信设备与链路保障")
+
+' ============================================================
+' BMS系统全景 (Enterprise Boundary)
+' ============================================================
+
+Enterprise_Boundary(bmsEnterprise, "BMS战场管理系统") {
+
+    ' --- 外部交互层 ---
+    System(extInterface, "外部接口管理分系统", "上级/横向/前后系统接口适配\n协议管理与接口监控")
+
+    ' --- 人机交互层 ---
+    System(hmi, "人机交互分系统", "全局框架、态势地图(2D/3D)\n标绘军标、任务/交战/资源交互\n时间轴回放、系统管理")
+
+    ' --- 业务应用层 ---
+    System(taskMgmt, "任务管理分系统", "指令解析、任务分解\n方案生成、监控调度、效能评估")
+    System(sitMgmt, "态势管理分系统", "数据预处理、信息融合\n威胁分析、态势推理与监控")
+    System(battleCtrl, "交战管控分系统", "编队管理、战术匹配\n交战计划、执行监控、效果评估")
+    System(resMgmt, "资源管理分系统", "资源注册/状态/能力建模\n调度、权限、质量监控")
+
+    ' --- 平台服务层 ---
+    System(msgService, "数据交换与消息服务分系统", "消息总线、数据分发\n格式转换、可靠性、流控")
+    System(knowledgeRule, "知识与规则管理分系统", "作战规则、战术/任务模板\n目标特征、条令、推理引擎")
+    System(dbMgmt, "数据库管理分系统", "实时库、历史库、时空库\n目标特征库、GIS库、情报库")
+
+    ' --- 通信与接入层 ---
+    System(commNet, "通信组网分系统", "链路管理、组网管理\n协议管理、通信安全与质量")
+    System(enhanceUnit, "协同增强单元分系统", "接入适配、平台代理\n能力增强(AI检测/识别)\n协同任务执行")
+
+    ' --- 运维保障层 ---
+    System(authAudit, "用户权限与安全审计分系统", "认证、用户管理\n权限控制、安全审计")
+    System(monitorLog, "监控与日志分系统", "基础设施/应用/业务监控\n告警、故障诊断、日志分析")
+    System(opsMgmt, "运维管理分系统", "自检初始化、配置管理\n运维任务、脚本作业、流程")
+    System(versionDeploy, "版本与部署管理分系统", "版本管理、CI/CD\n发布流程、回滚、依赖管理")
+}
+
+' ============================================================
+' 外部系统
+' ============================================================
+
+System_Ext(superiorCmd, "上级指控系统", "作战指令下达\n态势上报与审批")
+System_Ext(uavSystem, "无人平台任务系统", "UAV/USV等无人平台\n执行侦察/打击任务")
+System_Ext(khSystem, "KH协同系统", "横向态势共享\n协同任务协调")
+System_Ext(kdSystem, "KD协同系统", "横向态势共享\n协同任务协调")
+System_Ext(planSystem, "筹划系统", "作战筹划数据\n预案与计划输入")
+System_Ext(analysisSystem, "数据分析系统", "战后数据分析\n作战效果评估")
+
+' ============================================================
+' 用户 → BMS系统
+' ============================================================
+
+Rel_D(bizManager, hmi, "指挥决策与计划审批")
+Rel_D(bizUser, hmi, "任务操作与态势查看")
+Rel_D(sysAdmin, hmi, "系统配置管理")
+Rel_D(opsStaff, hmi, "监控运维")
+Rel_D(devTester, versionDeploy, "构建部署")
+Rel_D(dba, dbMgmt, "数据库运维")
+Rel_D(uavVendor, enhanceUnit, "平台接入适配")
+Rel_D(commVendor, commNet, "通信设备接入")
+
+' ============================================================
+' BMS内部层间关系 (自顶向下)
+' ============================================================
+
+Rel_D(extInterface, msgService, "外部消息转发")
+Rel_D(hmi, taskMgmt, "任务操作")
+Rel_D(hmi, sitMgmt, "态势订阅")
+Rel_D(hmi, battleCtrl, "交战操作")
+Rel_D(hmi, resMgmt, "资源操作")
+
+Rel_D(taskMgmt, msgService, "任务消息")
+Rel_D(sitMgmt, msgService, "态势消息")
+Rel_D(battleCtrl, msgService, "交战消息")
+Rel_D(resMgmt, msgService, "资源消息")
+
+Rel_D(taskMgmt, knowledgeRule, "查询规则模板")
+Rel_D(battleCtrl, knowledgeRule, "查询战术模板")
+
+Rel_D(taskMgmt, dbMgmt, "数据读写")
+Rel_D(sitMgmt, dbMgmt, "数据读写")
+Rel_D(hmi, dbMgmt, "GIS/军标/回放数据查询")
+
+Rel_D(commNet, enhanceUnit, "通信链路承载")
+
+Rel_D(authAudit, hmi, "认证授权")
+Rel_D(monitorLog, msgService, "采集监控数据")
+
+' ============================================================
+' BMS ↔ 外部系统
+' ============================================================
+
+Rel_U(extInterface, superiorCmd, "指令接收/态势上报", "军用数据链")
+Rel_L(extInterface, khSystem, "态势共享", "协同数据链")
+Rel_R(extInterface, kdSystem, "态势共享", "协同数据链")
+Rel_L(planSystem, extInterface, "筹划数据输入")
+Rel_R(extInterface, analysisSystem, "作战数据输出")
+Rel_D(enhanceUnit, uavSystem, "指令/状态交互", "地面站协议/数字模型接口")
+
+@enduml

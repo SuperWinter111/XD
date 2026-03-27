@@ -1,0 +1,108 @@
+@startuml C4_Deployment_01_LabSingleServer
+!include <C4/C4_Deployment>
+
+title BMS系统 - Deployment View 01 实验室单机部署
+caption 实验室条件下所有核心能力、无人平台数字模型与可观测性组件可收敛到一台 Linux 服务器上，便于联调与回归验证
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+HIDE_STEREOTYPE()
+
+Person(operator, "业务使用人员", "通过浏览器访问 HMI")
+Person(devTester, "开发/测试人员", "部署、联调、回放验证")
+System_Ext(uavSystem, "无人平台任务系统", "实验室阶段由无人平台数字模型替代")
+
+Deployment_Node(labHost, "实验室单机服务器", "Linux Server + Docker Engine", "单机承载完整实验室联调环境") {
+
+    Deployment_Node(runtime, "容器运行时", "Docker Compose", "按功能域部署服务") {
+        Container(frontend, "HMI前端", "Nginx + Vue 3", "人机交互入口")
+        Container(apiGateway, "API Gateway / BFF", "Gateway Service", "统一鉴权、聚合查询、WebSocket出口")
+
+        Container(extInterface, "外部接口管理分系统", "Backend Service", "上级/横向/前后系统适配")
+        Container(taskMgmt, "任务管理分系统", "Backend Service", "任务解析、分解、方案生成")
+        Container(sitMgmt, "态势管理分系统", "Backend Service", "融合、威胁分析、态势推理")
+        Container(battleCtrl, "交战管控分系统", "Backend Service", "交战计划、执行监控、效果评估")
+        Container(resMgmt, "资源管理分系统", "Backend Service", "资源注册、状态、调度")
+        Container(knowledgeRule, "知识与规则管理分系统", "Backend Service", "规则/模板/条令")
+        Container(commNet, "通信组网分系统", "Backend Service", "链路/协议/质量监控")
+        Container(enhanceUnit, "协同增强单元分系统", "Edge Adapter Service", "平台代理、能力增强、任务执行")
+        Container(authAudit, "用户权限与安全审计分系统", "Security Service", "认证授权与审计")
+        Container(monitorLog, "监控与日志分系统", "Observability Service", "监控、告警、日志")
+        Container(opsMgmt, "运维管理分系统", "Ops Service", "配置、自检、作业")
+
+        Container(ddsBus, "DDS总线", "DDS Middleware", "容器间事件总线与状态分发")
+
+        ContainerDb(historyDb, "任务/交战历史库", "PostgreSQL", "任务、计划、评估、审计")
+        ContainerDb(stateDb, "实时状态库", "Redis", "资源状态、会话、缓存")
+        ContainerDb(spatialDb, "时空/GIS库", "PostGIS", "GIS、轨迹、态势快照")
+        ContainerDb(knowledgeDb, "知识规则库", "PostgreSQL/DocumentDB", "规则、模板、条令、目标特征")
+
+        Deployment_Node(uavDigitalTwin, "无人平台数字模型", "Simulation Boundary", "实验室条件下替代真实地面站/任务系统/实机平台") {
+            Container(simOrchestrator, "场景编排器", "Simulation Service", "仿真场景、时钟、脚本编排")
+            Container(platformSim, "平台数字模型", "Simulation Service", "平台运动学/任务系统/接口响应")
+            Container(sensorSim, "传感器数字模型", "Simulation Service", "光电/雷达/覆盖范围")
+            Container(weaponSim, "武器数字模型", "Simulation Service", "武器挂载、投放、毁伤")
+            Container(targetSim, "目标数字模型", "Simulation Service", "可先由固定目标脚本实现，后续逐步扩展为完整目标模型与真值能力")
+            Container(dataRecorder, "数据记录与回放服务", "Replay Service", "记录飞行、感知、打击与真值数据")
+            Container(interfaceAdapter, "任务系统接口适配器", "Adapter Service", "对外呈现统一的无人平台任务系统接口")
+        }
+    }
+}
+
+Rel(operator, frontend, "HTTPS/WS")
+Rel(devTester, opsMgmt, "HTTPS/API")
+
+Rel(frontend, apiGateway, "HTTPS/WS")
+Rel(apiGateway, authAudit, "认证/鉴权")
+Rel(apiGateway, taskMgmt, "命令/查询 API")
+Rel(apiGateway, sitMgmt, "态势查询/订阅")
+Rel(apiGateway, battleCtrl, "交战 API")
+Rel(apiGateway, resMgmt, "资源 API")
+Rel(apiGateway, opsMgmt, "运维 API")
+
+Rel(taskMgmt, knowledgeRule, "任务模板/规则查询", "API")
+Rel(sitMgmt, knowledgeRule, "目标特征/威胁知识查询", "API")
+Rel(battleCtrl, knowledgeRule, "战术模板/交战规则查询", "API")
+Rel(knowledgeRule, knowledgeDb, "读写知识与规则数据", "SQL/Document API")
+
+Rel(extInterface, ddsBus, "发布/订阅", "DDS")
+Rel(taskMgmt, ddsBus, "发布/订阅", "DDS")
+Rel(sitMgmt, ddsBus, "发布/订阅", "DDS")
+Rel(battleCtrl, ddsBus, "发布/订阅", "DDS")
+Rel(resMgmt, ddsBus, "发布/订阅", "DDS")
+Rel(commNet, ddsBus, "发布/订阅", "DDS")
+Rel(enhanceUnit, ddsBus, "发布/订阅", "DDS")
+Rel(monitorLog, ddsBus, "监控事件订阅", "DDS")
+
+Rel(taskMgmt, historyDb, "SQL")
+Rel(battleCtrl, historyDb, "SQL")
+Rel(authAudit, historyDb, "SQL")
+Rel(resMgmt, stateDb, "KV")
+Rel(apiGateway, stateDb, "会话/缓存")
+Rel(sitMgmt, spatialDb, "时空查询")
+Rel(apiGateway, spatialDb, "地图资源查询")
+
+Rel(simOrchestrator, platformSim, "场景驱动")
+Rel(simOrchestrator, sensorSim, "场景驱动")
+Rel(simOrchestrator, weaponSim, "场景驱动")
+Rel(simOrchestrator, targetSim, "目标模型同步")
+Rel(platformSim, sensorSim, "平台姿态/任务状态")
+Rel(platformSim, weaponSim, "平台挂载/发射状态")
+Rel(sensorSim, targetSim, "目标可见性校核")
+Rel(weaponSim, targetSim, "毁伤结果裁决")
+Rel(platformSim, interfaceAdapter, "飞行/任务状态")
+Rel(sensorSim, interfaceAdapter, "传感器状态/探测结果")
+Rel(weaponSim, interfaceAdapter, "武器状态/毁伤结果")
+Rel(interfaceAdapter, enhanceUnit, "指令/状态交互", "数字模型接口")
+Rel(targetSim, sitMgmt, "目标模型/真值校核数据")
+Rel(dataRecorder, platformSim, "记录飞行数据")
+Rel(dataRecorder, sensorSim, "记录感知数据")
+Rel(dataRecorder, weaponSim, "记录武器数据")
+Rel(dataRecorder, targetSim, "记录目标模型与真值数据")
+Rel(dataRecorder, historyDb, "读写回放记录")
+Rel(dataRecorder, spatialDb, "读写轨迹与态势快照")
+
+Rel(interfaceAdapter, uavSystem, "实验室阶段以统一接口对外呈现")
+Rel(enhanceUnit, uavSystem, "协议适配", "数字模型接口")
+
+@enduml

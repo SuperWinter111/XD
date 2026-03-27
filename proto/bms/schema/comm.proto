@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package bms.schema.comm;
+
+option java_multiple_files = true;
+option java_package = "com.bms.schema.comm";
+option csharp_namespace = "Bms.Schema.Comm";
+
+import "bms/schema/common.proto";
+
+message TopologyNode {
+  string node_id = 1;
+  string node_type = 2;
+  bms.schema.common.ResourceAvailability availability = 3;
+}
+
+message TopologyLink {
+  string link_id = 1;
+  string from_node_id = 2;
+  string to_node_id = 3;
+  bms.schema.common.LinkGrade link_grade = 4;
+}
+
+message TopologySnapshot {
+  bms.schema.common.CommonHeader header = 1;
+  string topology_id = 2;
+  repeated TopologyNode nodes = 3;
+  repeated TopologyLink links = 4;
+  int64 changed_at_utc_ms = 5;
+}
+
+message LinkQualitySnapshot {
+  bms.schema.common.CommonHeader header = 1;
+  string link_id = 2;
+  double latency_ms = 3;
+  double jitter_ms = 4;
+  double packet_loss_ratio = 5;
+  double bandwidth_kbps = 6;
+  bms.schema.common.LinkGrade link_grade = 7;
+}
+
+message DegradationAlert {
+  bms.schema.common.CommonHeader header = 1;
+  string alert_id = 2;
+  string link_id = 3;
+  bms.schema.common.LinkGrade current_grade = 4;
+  bms.schema.common.ExceptionSeverity severity = 5;
+  string reason = 6;
+}
+
+message SecurityEvent {
+  bms.schema.common.CommonHeader header = 1;
+  string event_id = 2;
+  bms.schema.common.CommSecurityEventType event_type = 3;
+  bms.schema.common.ExceptionSeverity severity = 4;
+  string detail = 5;
+}

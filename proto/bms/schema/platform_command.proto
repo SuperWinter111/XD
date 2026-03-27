@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package bms.schema.platformcmd;
+
+option java_multiple_files = true;
+option java_package = "com.bms.schema.platformcmd";
+option csharp_namespace = "Bms.Schema.PlatformCommand";
+
+import "bms/schema/common.proto";
+import "bms/schema/platform.proto";
+
+message Waypoint {
+  string waypoint_id = 1;
+  double latitude_deg = 2;
+  double longitude_deg = 3;
+  double altitude_m = 4;
+  double speed_mps = 5;
+  bms.schema.common.RouteAction action = 6;
+}
+
+message FlightPlanUploadCommand {
+  bms.schema.common.CommonHeader header = 1;
+  string command_id = 2;
+  string platform_id = 3;
+  string plan_id = 4;
+  repeated Waypoint waypoints = 5;
+}
+
+message FlightModeSetCommand {
+  bms.schema.common.CommonHeader header = 1;
+  string command_id = 2;
+  string platform_id = 3;
+  bms.schema.platform.FlightMode target_mode = 4;
+}
+
+message TakeoffCommand {
+  bms.schema.common.CommonHeader header = 1;
+  string command_id = 2;
+  string platform_id = 3;
+  double target_altitude_m = 4;
+}
+
+message RtlCommand {
+  bms.schema.common.CommonHeader header = 1;
+  string command_id = 2;
+  string platform_id = 3;
+  bool immediate = 4;
+}
+
+message LoiterCommand {
+  bms.schema.common.CommonHeader header = 1;
+  string command_id = 2;
+  string platform_id = 3;
+  bms.schema.platform.GeoPointLla loiter_center = 4;
+  double radius_m = 5;
+  double duration_s = 6;
+}
+
+message TimeSyncCommand {
+  bms.schema.common.CommonHeader header = 1;
+  string sync_id = 2;
+  string platform_id = 3;
+  int64 target_time_utc_ms = 4;
+  int64 execute_not_before_utc_ms = 5;
+}

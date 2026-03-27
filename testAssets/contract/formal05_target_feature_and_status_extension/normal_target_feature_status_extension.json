@@ -1,0 +1,22 @@
+{
+  "trace_id": "trace-formal05-normal-001",
+  "schema_version": "formal05.v1",
+  "event_time": "2026-03-23T10:15:00Z",
+  "source_id": "sitmgmt.feature",
+  "topic": "target_feature_snapshot",
+  "target_feature_snapshot": {
+    "target_id": "target-101",
+    "feature_signature": "fixed-wing-medium",
+    "emission_profile": "radar-intermittent",
+    "source_list": [
+      "eo-sensor-01",
+      "radar-02"
+    ]
+  },
+  "target_status": {
+    "target_id": "target-101",
+    "mobility_status": "ACTIVE",
+    "identity_status": "SUSPECT",
+    "damage_state": "UNKNOWN"
+  }
+}

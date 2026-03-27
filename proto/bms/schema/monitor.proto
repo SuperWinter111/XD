@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package bms.schema.monitor;
+
+option java_multiple_files = true;
+option java_package = "com.bms.schema.monitor";
+option csharp_namespace = "Bms.Schema.Monitor";
+
+import "bms/schema/common.proto";
+
+message MetricPoint {
+  string metric_name = 1;
+  double metric_value = 2;
+  string unit = 3;
+}
+
+message MonitorMetric {
+  bms.schema.common.CommonHeader header = 1;
+  string metric_id = 2;
+  string component_id = 3;
+  repeated MetricPoint points = 4;
+}
+
+message MonitorAlert {
+  bms.schema.common.CommonHeader header = 1;
+  string alert_id = 2;
+  string component_id = 3;
+  string alert_type = 4;
+  bms.schema.common.ExceptionSeverity severity = 5;
+  string detail = 6;
+}

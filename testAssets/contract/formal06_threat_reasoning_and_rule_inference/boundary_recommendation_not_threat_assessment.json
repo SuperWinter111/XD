@@ -1,0 +1,17 @@
+{
+  "trace_id": "trace-formal06-boundary-001",
+  "schema_version": "formal06.v1",
+  "event_time": "2026-03-23T10:35:00Z",
+  "source_id": "knowledgerule.engine",
+  "topic": "recommendation_generated",
+  "recommendation_item": {
+    "recommendation_id": "rec-003",
+    "suggestion": "increase_observation_frequency",
+    "source_rule_id": "rule-watch-02"
+  },
+  "forbidden_fields": {
+    "threat_level": null,
+    "assessment_id": null
+  },
+  "boundary_rule": "KnowledgeRule output is advisory and must not replace ThreatAssessment ownership."
+}

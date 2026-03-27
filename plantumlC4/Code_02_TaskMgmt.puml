@@ -1,0 +1,157 @@
+@startuml Code_02_TaskMgmt
+title BMS系统 - Code Diagram 02 任务管理分系统
+
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "接入与指令解析层" as accessLayer {
+    class CommandIngestFacade
+    class ExternalOrderAdapter
+    class HmiTaskAdapter
+    class CommandValidationService
+    class CommandSemanticParser
+    class FuzzyParameterCompleter
+    class IntentNormalizationService
+
+    CommandIngestFacade --> ExternalOrderAdapter
+    CommandIngestFacade --> HmiTaskAdapter
+    CommandIngestFacade --> CommandValidationService
+    CommandValidationService --> CommandSemanticParser
+    CommandSemanticParser --> FuzzyParameterCompleter
+    CommandSemanticParser --> IntentNormalizationService
+}
+
+package "任务建模与分解层" as taskModelLayer {
+    class TaskTypeRecognizer
+    class TaskConstraintModeler
+    class TaskDependencyBuilder
+    class TaskDecompositionService
+    class TaskNetworkBuilder
+    class MoeIndicatorModeler
+    class TimeWindowPolicy
+    class TaskReconstructionService
+
+    TaskTypeRecognizer --> TaskConstraintModeler
+    TaskConstraintModeler --> MoeIndicatorModeler
+    TaskConstraintModeler --> TimeWindowPolicy
+    TaskConstraintModeler --> TaskDependencyBuilder
+    TaskDecompositionService --> TaskNetworkBuilder
+    TaskReconstructionService --> TaskConstraintModeler
+    TaskReconstructionService --> TaskDecompositionService
+}
+
+package "模板匹配与任务方案层" as templateLayer {
+    class TaskTemplateRepository
+    class TaskTemplateMatcher
+    class HistoricalTaskReuseService
+    class ResourceMatchService
+    class TaskSchemeAssembler
+    class MultiSchemeEvaluator
+    class ConflictCoordinationService
+    class TaskPackagePublisher
+
+    TaskTemplateMatcher --> TaskTemplateRepository
+    TaskTemplateMatcher --> HistoricalTaskReuseService
+    ResourceMatchService --> ConflictCoordinationService
+    TaskSchemeAssembler --> ResourceMatchService
+    TaskSchemeAssembler --> MultiSchemeEvaluator
+    TaskSchemeAssembler --> TaskPackagePublisher
+}
+
+package "执行闭环与效能评估层" as loopLayer {
+    class TaskDispatchService
+    class TaskProgressTracker
+    class TaskExceptionDetector
+    class HumanInterventionGateway
+    class TaskEffectivenessEvaluator
+    class KillChainClosureEvaluator
+    class EvaluationReportBuilder
+
+    TaskDispatchService --> TaskProgressTracker
+    TaskProgressTracker --> TaskExceptionDetector
+    TaskExceptionDetector --> HumanInterventionGateway
+    TaskEffectivenessEvaluator --> KillChainClosureEvaluator
+    TaskEffectivenessEvaluator --> EvaluationReportBuilder
+}
+
+package "集成与持久化层" as integrationLayer {
+    class RuleQueryGateway
+    class ResourceCoordinationGateway
+    class BattleCtrlGateway
+    class TaskEventPublisher
+    class TaskRepository
+    class EvaluationRepository
+}
+
+package "领域对象" as domainLayer {
+    class MissionCommand
+    class TaskIntent
+    class TaskConstraint
+    class MoeProfile
+    class TimeWindow
+    class TaskNode
+    class TaskGraph
+    class ResourceCandidate
+    class TaskScheme
+    class TaskPackage
+    class ReconstructionRequest
+    class TaskException
+    class TaskExecutionSnapshot
+    class EffectivenessReport
+}
+
+CommandSemanticParser --> MissionCommand
+IntentNormalizationService --> TaskIntent
+TaskTypeRecognizer --> TaskIntent
+TaskConstraintModeler --> TaskConstraint
+MoeIndicatorModeler --> MoeProfile
+TimeWindowPolicy --> TimeWindow
+TaskDecompositionService --> TaskNode
+TaskNetworkBuilder --> TaskGraph
+ResourceMatchService --> ResourceCandidate
+TaskSchemeAssembler --> TaskScheme
+TaskPackagePublisher --> TaskPackage
+TaskReconstructionService --> ReconstructionRequest
+TaskExceptionDetector --> TaskException
+TaskProgressTracker --> TaskExecutionSnapshot
+EvaluationReportBuilder --> EffectivenessReport
+
+IntentNormalizationService --> TaskTypeRecognizer : normalized intent
+TaskTypeRecognizer --> TaskDecompositionService : task type + decomposition hint
+TaskConstraintModeler --> TaskDecompositionService : constraints
+TaskDependencyBuilder --> TaskNetworkBuilder : dependencies
+TaskDecompositionService --> TaskTemplateMatcher : sub-task signatures
+TaskTemplateMatcher --> TaskSchemeAssembler : matched templates
+TaskConstraintModeler --> ResourceMatchService : resource prerequisites
+ResourceMatchService --> ResourceCoordinationGateway : query candidates
+TaskSchemeAssembler --> TaskDispatchService : approved task scheme
+TaskDispatchService --> BattleCtrlGateway : publish task package
+TaskDispatchService --> TaskEventPublisher : task status
+TaskProgressTracker --> TaskRepository : persist execution state
+TaskEffectivenessEvaluator --> EvaluationRepository : persist evaluation
+TaskExceptionDetector --> TaskReconstructionService : out-of-task-scope exception
+TaskExceptionDetector --> BattleCtrlGateway : plan-level adjustment feedback
+TaskReconstructionService --> TaskPackagePublisher : rebuilt task package
+TaskTemplateMatcher --> RuleQueryGateway : load templates
+TaskConstraintModeler --> RuleQueryGateway : load command rules
+HumanInterventionGateway --> HmiTaskAdapter : manual constraint adjustment
+
+note right of TaskSchemeAssembler
+只生成任务语义下的任务方案与任务包。
+不直接形成平台航路、载荷模式、武器动作等计划语义对象。
+end note
+
+note right of TaskExceptionDetector
+先判断异常能否在当前任务约束内通过计划级调整解决。
+若不能，则转入任务重构流程。
+end note
+
+note bottom of HumanInterventionGateway
+人工介入点保留在任务层：
+调整任务目标、时窗、MOE、资源前提，或终止任务。
+end note
+
+@enduml

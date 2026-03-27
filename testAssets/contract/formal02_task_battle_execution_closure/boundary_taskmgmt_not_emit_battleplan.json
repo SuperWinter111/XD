@@ -1,0 +1,12 @@
+{
+  "sample_type": "boundary",
+  "formal_id": "Formal 02",
+  "trace_id": "trace-formal02-boundary-001",
+  "schema_version": "v1",
+  "event_time": "2026-03-20T09:12:00Z",
+  "source_id": "taskmgmt.boundary.check",
+  "mission_id": "mission-001",
+  "task_package_id": "task-package-001",
+  "forbidden_output": "battle_plan",
+  "boundary_rule": "taskmgmt_must_not_emit_battleplan"
+}

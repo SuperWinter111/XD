@@ -1,0 +1,2 @@
+#include "wp09_authaudit/security_correlation_service.h"
+namespace wp09_authaudit { SecurityReviewRecord SecurityCorrelationService::correlate(const SecurityEvent& securityEvent, const AuditEvent& auditEvent) const { return SecurityReviewRecord{securityEvent.traceId, securityEvent.sourceNodeId, securityEvent.severity, auditEvent.action}; } }

@@ -1,0 +1,17 @@
+{
+  "trace_id": "trace-formal10-abnormal-001",
+  "schema_version": "formal10.v1",
+  "event_time": "2026-03-23T11:35:00Z",
+  "source_id": "monitorlog.opsmgmt",
+  "topic": "incident_updated",
+  "security_event": {
+    "event_id": "sec-001",
+    "severity": "HIGH",
+    "source_node": "nano-b"
+  },
+  "incident_ticket": {
+    "incident_id": "inc-001",
+    "status": "OPEN",
+    "reason": "security_escalation"
+  }
+}

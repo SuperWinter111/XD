@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package bms.schema.execution;
+
+option java_multiple_files = true;
+option java_package = "com.bms.schema.execution";
+option csharp_namespace = "Bms.Schema.Execution";
+
+import "bms/schema/common.proto";
+
+message ExecutionStateSnapshot {
+  bms.schema.common.CommonHeader header = 1;
+  string execution_id = 2;
+  string battle_plan_id = 3;
+  string platform_id = 4;
+  bms.schema.common.ExecutionPhase current_phase = 5;
+  string current_waypoint_id = 6;
+  double progress_ratio = 7;
+  repeated string acked_command_ids = 8;
+}
+
+message ExecutionException {
+  bms.schema.common.CommonHeader header = 1;
+  string exception_id = 2;
+  string battle_plan_id = 3;
+  bms.schema.common.ExecutionExceptionType exception_type = 4;
+  bms.schema.common.ExceptionSeverity severity = 5;
+  bool in_task_constraint = 6;
+  string reason = 7;
+  repeated string impacted_resource_ids = 8;
+}

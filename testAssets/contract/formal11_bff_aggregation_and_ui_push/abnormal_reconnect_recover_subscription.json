@@ -1,0 +1,16 @@
+{
+  "trace_id": "trace-formal11-abnormal-001",
+  "schema_version": "formal11.v1",
+  "event_time": "2026-03-23T11:50:00Z",
+  "source_id": "bff.gateway",
+  "topic": "ui_push",
+  "ui_push_envelope": {
+    "channel": "alert_stream",
+    "view_type": "reconnect_recovery",
+    "payload_ref": "recover-session-01"
+  },
+  "recovery_state": {
+    "last_seen_event_id": "alert-091",
+    "recovered": true
+  }
+}

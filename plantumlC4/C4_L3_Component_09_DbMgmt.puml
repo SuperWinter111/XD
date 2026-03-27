@@ -1,0 +1,80 @@
+@startuml C4_L3_Component_09_DbMgmt
+!include <C4/C4_Component>
+
+title 数据库管理分系统 - C4 Level 3 组件图
+caption 平台服务层 / 数据库管理分系统
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+' ============================================================
+' 外部依赖容器 (数据消费者)
+' ============================================================
+
+Container(sitMgmt, "态势管理分系统", "业务服务", "时空/目标/情报数据")
+Container(taskMgmt, "任务管理分系统", "业务服务", "任务/方案数据")
+Container(battleCtrl, "交战管控分系统", "业务服务", "交战计划/评估数据")
+Container(resMgmt, "资源管理分系统", "业务服务", "资源状态/能力数据")
+Container(hmi, "人机交互分系统", "Web前端/GIS引擎", "GIS/地图瓦片与军标查询")
+Container(knowledgeRule, "知识与规则管理分系统", "规则引擎", "知识/规则数据")
+Container(monitorLog, "监控与日志分系统", "监控服务", "数据库监控")
+Person(dba, "数据库管理员", "数据库运维")
+
+' ============================================================
+' 数据库管理分系统边界
+' ============================================================
+
+Container_Boundary(dbMgmt, "数据库管理分系统") {
+
+    Component(dbMonitor, "数据库监控模块", "监控组件", "性能监控\n连接池监控\n存储容量监控\n慢查询检测\n数据库告警")
+
+    Component(dbOps, "数据库运维模块", "运维工具", "备份与恢复\n性能调优\n容量规划\n安全审计\n迁移管理")
+
+    Component(realtimeDb, "实时数据库", "内存数据库", "实时数据读写\n数据过期策略\n内存管理")
+
+    Component(historyDb, "历史数据库", "关系型数据库", "历史数据归档\n生命周期管理\n查询优化")
+
+    Component(spatialDb, "时空数据库", "时空数据库", "时空数据索引\n时空查询\n轨迹数据管理")
+
+    Component(targetDb, "目标特征数据库", "文档数据库", "目标特征存储\n特征检索\n特征更新管理")
+
+    Component(gisDb, "地理信息数据库", "空间数据库", "地理数据存储\n地图瓦片管理\n空间索引\n坐标系转换")
+
+    Component(intelDb, "情报数据库", "关系型数据库", "情报数据存储检索\n时效管理\n情报关联存储")
+}
+
+' ============================================================
+' 外部消费者 → 数据库
+' ============================================================
+
+Rel_D(sitMgmt, spatialDb, "读写航迹/轨迹数据", "时空查询")
+Rel_D(sitMgmt, intelDb, "读写情报数据", "SQL")
+Rel_D(sitMgmt, realtimeDb, "读写实时态势", "KV")
+Rel_D(taskMgmt, historyDb, "读写任务/方案数据", "SQL")
+Rel_D(battleCtrl, historyDb, "读写交战记录", "SQL")
+Rel_D(resMgmt, realtimeDb, "读写资源实时状态", "KV")
+Rel_D(resMgmt, historyDb, "读写资源历史", "SQL")
+Rel_D(hmi, gisDb, "读取地图瓦片/GIS", "只读查询")
+Rel_D(knowledgeRule, targetDb, "读写目标特征", "文档查询")
+
+' ============================================================
+' 内部交互
+' ============================================================
+
+Rel_R(dbMonitor, realtimeDb, "监控性能指标")
+Rel_R(dbMonitor, historyDb, "监控性能指标")
+Rel_R(dbMonitor, spatialDb, "监控性能指标")
+Rel_D(dbOps, realtimeDb, "备份/调优/迁移")
+Rel_D(dbOps, historyDb, "备份/调优/迁移")
+Rel_D(dbOps, spatialDb, "备份/调优/迁移")
+Rel_R(realtimeDb, historyDb, "数据归档转储")
+
+' ============================================================
+' 运维/监控
+' ============================================================
+
+Rel_D(dba, dbOps, "数据库运维操作")
+Rel_D(dba, dbMonitor, "查看数据库状态")
+Rel_D(dbMonitor, monitorLog, "上报数据库监控指标")
+
+@enduml

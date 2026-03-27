@@ -1,0 +1,131 @@
+syntax = "proto3";
+
+package bms.schema.platform;
+
+option java_multiple_files = true;
+option java_package = "com.bms.schema.platform";
+option csharp_namespace = "Bms.Schema.Platform";
+
+import "bms/schema/common.proto";
+
+enum FlightMode {
+  FLIGHT_MODE_UNKNOWN = 0;
+  FLIGHT_MODE_MANUAL = 1;
+  FLIGHT_MODE_STABILIZE = 2;
+  FLIGHT_MODE_GUIDED = 3;
+  FLIGHT_MODE_AUTO = 4;
+  FLIGHT_MODE_LOITER = 5;
+  FLIGHT_MODE_RTL = 6;
+  FLIGHT_MODE_LAND = 7;
+  FLIGHT_MODE_TAKEOFF = 8;
+}
+
+enum NavFixType {
+  NAV_FIX_UNKNOWN = 0;
+  NAV_FIX_NONE = 1;
+  NAV_FIX_2D = 2;
+  NAV_FIX_3D = 3;
+  NAV_FIX_RTK_FLOAT = 4;
+  NAV_FIX_RTK_FIXED = 5;
+}
+
+message GeoPointLla {
+  double latitude_deg = 1;
+  double longitude_deg = 2;
+  double altitude_m = 3;
+}
+
+message AttitudeEuler {
+  double roll_deg = 1;
+  double pitch_deg = 2;
+  double yaw_deg = 3;
+}
+
+message VelocityNed {
+  double north_mps = 1;
+  double east_mps = 2;
+  double down_mps = 3;
+}
+
+message AirDataState {
+  double indicated_airspeed_mps = 1;
+  double true_airspeed_mps = 2;
+  double ground_speed_mps = 3;
+  double vertical_speed_mps = 4;
+  double mach_number = 5;
+  double angle_of_attack_deg = 6;
+  double sideslip_deg = 7;
+  double barometric_altitude_m = 8;
+}
+
+message PropulsionState {
+  double throttle_ratio = 1;
+  double engine_rpm = 2;
+  double engine_temperature_c = 3;
+  double fuel_flow_kgps = 4;
+  bool engine_online = 5;
+}
+
+message PowerState {
+  double battery_voltage_v = 1;
+  double battery_current_a = 2;
+  double battery_remaining_ratio = 3;
+  double fuel_remaining_kg = 4;
+  double fuel_remaining_ratio = 5;
+}
+
+message NavigationState {
+  bms.schema.common.CommonHeader header = 1;
+  string platform_id = 2;
+  NavFixType nav_fix_type = 3;
+  uint32 satellite_count = 4;
+  double hdop = 5;
+  double vdop = 6;
+  double position_uncertainty_m = 7;
+  double velocity_uncertainty_mps = 8;
+  bool imu_healthy = 9;
+  bool compass_healthy = 10;
+}
+
+message FlightState {
+  bms.schema.common.CommonHeader header = 1;
+  string platform_id = 2;
+  FlightMode flight_mode = 3;
+  bool armed = 4;
+  bool airborne = 5;
+  GeoPointLla position = 6;
+  AttitudeEuler attitude = 7;
+  VelocityNed velocity_ned = 8;
+  AirDataState air_data = 9;
+  PropulsionState propulsion = 10;
+  PowerState power = 11;
+  double heading_deg = 12;
+  double course_over_ground_deg = 13;
+  double load_factor_g = 14;
+}
+
+message PlatformAlert {
+  bms.schema.common.CommonHeader header = 1;
+  string alert_id = 2;
+  string platform_id = 3;
+  string alert_type = 4;
+  bms.schema.common.ExceptionSeverity severity = 5;
+  string detail = 6;
+}
+
+message CommandAck {
+  bms.schema.common.CommonHeader header = 1;
+  string command_id = 2;
+  string platform_id = 3;
+  bool accepted = 4;
+  string reason = 5;
+}
+
+message MissionProgress {
+  bms.schema.common.CommonHeader header = 1;
+  string mission_id = 2;
+  string platform_id = 3;
+  string current_phase = 4;
+  string current_waypoint_id = 5;
+  double progress_ratio = 6;
+}

@@ -1,0 +1,127 @@
+@startuml Code_10_DbMgmt
+title BMS系统 - Code Diagram 10 数据库管理分系统
+
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "接入与分库路由层" as ingressLayer {
+    class DataAccessGateway
+    class StorageRoutingService
+    class OwnershipPolicyResolver
+    class ReadWritePolicyService
+    class QueryAdmissionService
+
+    DataAccessGateway --> StorageRoutingService
+    StorageRoutingService --> OwnershipPolicyResolver
+    StorageRoutingService --> ReadWritePolicyService
+    DataAccessGateway --> QueryAdmissionService
+}
+
+package "实时与事务存储层" as operationalLayer {
+    class RealtimeStoreService
+    class HistoryStoreService
+    class TransactionCoordinator
+    class RetentionPolicyExecutor
+    class ArchivalTransferService
+
+    RealtimeStoreService --> RetentionPolicyExecutor
+    HistoryStoreService --> TransactionCoordinator
+    RealtimeStoreService --> ArchivalTransferService
+    ArchivalTransferService --> HistoryStoreService
+}
+
+package "时空与专题存储层" as domainStoreLayer {
+    class SpatialStoreService
+    class TargetFeatureStoreService
+    class GisStoreService
+    class IntelStoreService
+    class SpatialIndexManager
+    class CoordinateTransformService
+
+    SpatialStoreService --> SpatialIndexManager
+    GisStoreService --> CoordinateTransformService
+}
+
+package "运维与可靠性层" as opsLayer {
+    class DbMonitoringService
+    class SlowQueryAnalyzer
+    class CapacityPlanner
+    class BackupRestoreService
+    class MigrationOrchestrator
+    class SecurityAuditService
+
+    DbMonitoringService --> SlowQueryAnalyzer
+    DbMonitoringService --> CapacityPlanner
+    BackupRestoreService --> MigrationOrchestrator
+    SecurityAuditService --> BackupRestoreService
+}
+
+package "集成与观测层" as integrationLayer {
+    class TaskDataGateway
+    class BattleDataGateway
+    class SituationDataGateway
+    class ResourceDataGateway
+    class KnowledgeDataGateway
+    class HmiReadonlyGateway
+    class MonitorLogGateway
+}
+
+package "领域对象" as domainLayer {
+    class DataOwnershipPolicy
+    class StorageShardKey
+    class RealtimeRecord
+    class ArchiveRecord
+    class SpatialTrackRecord
+    class TargetFeatureRecord
+    class GisTileRecord
+    class IntelRecord
+    class BackupSnapshot
+    class DbMetricSnapshot
+}
+
+OwnershipPolicyResolver --> DataOwnershipPolicy
+StorageRoutingService --> StorageShardKey
+RealtimeStoreService --> RealtimeRecord
+HistoryStoreService --> ArchiveRecord
+SpatialStoreService --> SpatialTrackRecord
+TargetFeatureStoreService --> TargetFeatureRecord
+GisStoreService --> GisTileRecord
+IntelStoreService --> IntelRecord
+BackupRestoreService --> BackupSnapshot
+DbMonitoringService --> DbMetricSnapshot
+
+TaskDataGateway --> DataAccessGateway : task/task-scheme persistence
+BattleDataGateway --> DataAccessGateway : battle/effect persistence
+SituationDataGateway --> DataAccessGateway : situation/spatial/intel persistence
+ResourceDataGateway --> DataAccessGateway : resource state/capability persistence
+KnowledgeDataGateway --> DataAccessGateway : rule/template/feature persistence
+HmiReadonlyGateway --> GisStoreService : readonly GIS query
+StorageRoutingService --> RealtimeStoreService : realtime route
+StorageRoutingService --> HistoryStoreService : historical route
+StorageRoutingService --> SpatialStoreService : spatial route
+StorageRoutingService --> TargetFeatureStoreService : target-feature route
+StorageRoutingService --> GisStoreService : GIS route
+StorageRoutingService --> IntelStoreService : intel route
+DbMonitoringService --> MonitorLogGateway : db metrics and alerts
+BackupRestoreService --> MonitorLogGateway : backup/restore event
+MigrationOrchestrator --> MonitorLogGateway : migration event
+
+note right of StorageRoutingService
+数据库管理按 ownership 和数据类型做分库路由。
+它提供存储服务，不重新定义业务对象语义。
+end note
+
+note right of ArchivalTransferService
+负责实时数据向历史库归档转储。
+归档改变存储层级，不改变对象所属分系统与业务含义。
+end note
+
+note bottom of QueryAdmissionService
+HMI 只走只读查询路径。
+前端不直接获得跨 ownership 的写权限。
+end note
+
+@enduml

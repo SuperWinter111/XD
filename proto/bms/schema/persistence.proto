@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package bms.schema.persistence;
+
+option java_multiple_files = true;
+option java_package = "com.bms.schema.persistence";
+option csharp_namespace = "Bms.Schema.Persistence";
+
+import "bms/schema/common.proto";
+
+message DataOwnershipPolicy {
+  string owner_domain = 1;
+  string object_type = 2;
+  string primary_store = 3;
+  string read_policy = 4;
+  string write_policy = 5;
+  string retention_policy = 6;
+}
+
+message StorageShardKey {
+  string object_type = 1;
+  string owner_domain = 2;
+  string partition_key = 3;
+  string region = 4;
+}
+
+message RealtimeRecord {
+  bms.schema.common.CommonHeader header = 1;
+  string record_id = 2;
+  string owner_domain = 3;
+  string object_type = 4;
+  string object_id = 5;
+  bytes snapshot_bytes = 6;
+  int64 ttl_ms = 7;
+}
+
+message ArchiveRecord {
+  bms.schema.common.CommonHeader header = 1;
+  string archive_id = 2;
+  string owner_domain = 3;
+  string object_type = 4;
+  string object_id = 5;
+  bytes snapshot_bytes = 6;
+  int64 archived_at_utc_ms = 7;
+}
+
+message SpatialTrackRecord {
+  bms.schema.common.CommonHeader header = 1;
+  string track_id = 2;
+  double latitude = 3;
+  double longitude = 4;
+  double altitude_m = 5;
+  int64 sample_time_utc_ms = 6;
+  string spatial_index = 7;
+}
+
+message TargetFeatureRecord {
+  bms.schema.common.CommonHeader header = 1;
+  string feature_id = 2;
+  string target_type = 3;
+  string feature_version = 4;
+  bytes feature_bytes = 5;
+}
+
+message GisTileRecord {
+  string tile_id = 1;
+  string layer_name = 2;
+  int32 zoom_level = 3;
+  int32 tile_x = 4;
+  int32 tile_y = 5;
+  bytes tile_bytes = 6;
+}
+
+message IntelRecord {
+  bms.schema.common.CommonHeader header = 1;
+  string intel_id = 2;
+  string intel_type = 3;
+  string summary = 4;
+  bytes payload_bytes = 5;
+  int64 effective_until_utc_ms = 6;
+}

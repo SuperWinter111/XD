@@ -1,0 +1,16 @@
+{
+  "trace_id": "trace-formal08-boundary-001",
+  "schema_version": "formal08.v1",
+  "event_time": "2026-03-23T11:10:00Z",
+  "source_id": "msgservice.delivery",
+  "topic": "bms/core/ops/msg/delivery_receipt",
+  "delivery_receipt": {
+    "receipt_id": "receipt-003",
+    "message_trace_id": "trace-formal08-boundary-001",
+    "subscriber_endpoint_id": "monitorlog",
+    "status": "SUCCEEDED",
+    "error_code": "NONE",
+    "delivered_at_utc_ms": 1774264200000
+  },
+  "boundary_rule": "DeliveryReceipt only confirms transport-level delivery and must not be interpreted as business completion."
+}

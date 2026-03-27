@@ -1,0 +1,145 @@
+@startuml Code_05_ResMgmt
+title BMS系统 - Code Diagram 05 资源管理分系统
+
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "注册与发现层" as registryLayer {
+    class ResourceIngressFacade
+    class PlatformRegistrationAdapter
+    class IdentityProvisioningService
+    class ResourceClassificationService
+    class AccessAdmissionService
+    class OnlineOfflineTracker
+
+    ResourceIngressFacade --> PlatformRegistrationAdapter
+    ResourceIngressFacade --> IdentityProvisioningService
+    ResourceIngressFacade --> ResourceClassificationService
+    ResourceIngressFacade --> AccessAdmissionService
+    ResourceIngressFacade --> OnlineOfflineTracker
+}
+
+package "状态与能力层" as statusLayer {
+    class ResourceStateAggregator
+    class PlatformHealthEvaluator
+    class EnergyStateAnalyzer
+    class PayloadStateAnalyzer
+    class LinkStateAnalyzer
+    class AvailabilityEvaluator
+    class CapabilityModelService
+    class TaskCapabilityMatrixBuilder
+
+    ResourceStateAggregator --> PlatformHealthEvaluator
+    ResourceStateAggregator --> EnergyStateAnalyzer
+    ResourceStateAggregator --> PayloadStateAnalyzer
+    ResourceStateAggregator --> LinkStateAnalyzer
+    ResourceStateAggregator --> AvailabilityEvaluator
+    CapabilityModelService --> TaskCapabilityMatrixBuilder
+}
+
+package "配置与调度层" as schedulingLayer {
+    class ResourceConfigService
+    class ResourceGroupingService
+    class ConfigTemplateService
+    class ResourceSchedulingService
+    class AllocationPolicyEngine
+    class ConflictArbitrationService
+    class ReservationManager
+    class ReleaseManager
+    class PriorityStrategyService
+
+    ResourceConfigService --> ResourceGroupingService
+    ResourceConfigService --> ConfigTemplateService
+    ResourceSchedulingService --> AllocationPolicyEngine
+    ResourceSchedulingService --> ConflictArbitrationService
+    ResourceSchedulingService --> ReservationManager
+    ResourceSchedulingService --> ReleaseManager
+    ResourceSchedulingService --> PriorityStrategyService
+}
+
+package "授权与质量层" as governanceLayer {
+    class ResourceAuthorizationService
+    class AuthAuditGateway
+    class ResourceQualityAssessmentService
+    class UtilizationStatisticsService
+    class FailureRateAnalyzer
+    class LifecycleManagementService
+
+    ResourceAuthorizationService --> AuthAuditGateway
+    ResourceQualityAssessmentService --> UtilizationStatisticsService
+    ResourceQualityAssessmentService --> FailureRateAnalyzer
+    ResourceQualityAssessmentService --> LifecycleManagementService
+}
+
+package "集成与持久化层" as integrationLayer {
+    class TaskMgmtGateway
+    class BattleCtrlGateway
+    class EdgeStateGateway
+    class ResourceEventPublisher
+    class ResourceRepository
+    class CapabilityRepository
+    class QualityRepository
+}
+
+package "领域对象" as domainLayer {
+    class ResourceRegistration
+    class ResourceIdentity
+    class ResourceDescriptor
+    class ResourceStateSnapshot
+    class HealthScore
+    class CapabilityProfile
+    class TaskCapabilityMatrix
+    class AllocationRequest
+    class AllocationDecision
+    class ReservationTicket
+    class AuthorizationScope
+    class QualityAssessment
+}
+
+PlatformRegistrationAdapter --> ResourceRegistration
+IdentityProvisioningService --> ResourceIdentity
+ResourceClassificationService --> ResourceDescriptor
+ResourceStateAggregator --> ResourceStateSnapshot
+PlatformHealthEvaluator --> HealthScore
+CapabilityModelService --> CapabilityProfile
+TaskCapabilityMatrixBuilder --> TaskCapabilityMatrix
+ResourceSchedulingService --> AllocationRequest
+AllocationPolicyEngine --> AllocationDecision
+ReservationManager --> ReservationTicket
+ResourceAuthorizationService --> AuthorizationScope
+ResourceQualityAssessmentService --> QualityAssessment
+
+OnlineOfflineTracker --> ResourceRepository : persist online state
+ResourceStateAggregator --> EdgeStateGateway : collect platform and payload states
+ResourceStateAggregator --> ResourceRepository : persist resource state
+CapabilityModelService --> CapabilityRepository : persist capability model
+ResourceSchedulingService --> TaskMgmtGateway : allocation result for task matching
+ResourceSchedulingService --> BattleCtrlGateway : allocation result for battle planning
+ResourceSchedulingService --> ResourceEventPublisher : allocation event
+ResourceStateAggregator --> ResourceEventPublisher : state changed
+ResourceAuthorizationService --> ResourceSchedulingService : authorization result
+ResourceSchedulingService --> ResourceAuthorizationService : access check
+ResourceQualityAssessmentService --> QualityRepository : persist quality stats
+CapabilityModelService --> ResourceSchedulingService : capability and match matrix
+AvailabilityEvaluator --> ResourceSchedulingService : availability constraints
+ResourceConfigService --> ResourceRepository : persist resource config
+
+note right of ResourceSchedulingService
+资源管理只产出资源分配、预留、释放与可用性决策。
+不生成任务包，也不生成交战计划。
+end note
+
+note right of CapabilityModelService
+统一建模平台、载荷、武器与链路能力，
+供 TaskMgmt 做资源前提匹配，供 BattleCtrl 做计划可执行性校核。
+end note
+
+note bottom of ResourceAuthorizationService
+资源访问控制独立存在。
+调度前必须完成授权校验，避免未授权平台被纳入任务或交战链。
+end note
+
+@enduml

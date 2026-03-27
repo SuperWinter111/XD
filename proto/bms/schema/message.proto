@@ -1,0 +1,117 @@
+syntax = "proto3";
+
+package bms.schema.message;
+
+option java_multiple_files = true;
+option java_package = "com.bms.schema.message";
+option csharp_namespace = "Bms.Schema.Message";
+
+import "bms/schema/common.proto";
+
+enum EndpointType {
+  ENDPOINT_TYPE_UNKNOWN = 0;
+  ENDPOINT_TYPE_CONTAINER = 1;
+  ENDPOINT_TYPE_BFF = 2;
+  ENDPOINT_TYPE_EDGE = 3;
+  ENDPOINT_TYPE_EXTERNAL_SYSTEM = 4;
+  ENDPOINT_TYPE_SIMULATION = 5;
+  ENDPOINT_TYPE_MONITOR = 6;
+}
+
+enum TopicState {
+  TOPIC_STATE_UNKNOWN = 0;
+  TOPIC_STATE_ACTIVE = 1;
+  TOPIC_STATE_DEPRECATED = 2;
+}
+
+enum SubscriptionBindingStatus {
+  SUBSCRIPTION_BINDING_STATUS_UNKNOWN = 0;
+  SUBSCRIPTION_BINDING_STATUS_SUCCESS = 1;
+  SUBSCRIPTION_BINDING_STATUS_REJECTED = 2;
+}
+
+enum DeliveryStatus {
+  DELIVERY_STATUS_UNKNOWN = 0;
+  DELIVERY_STATUS_SUCCEEDED = 1;
+  DELIVERY_STATUS_FAILED = 2;
+}
+
+enum DeliveryErrorCode {
+  DELIVERY_ERROR_CODE_NONE = 0;
+  DELIVERY_ERROR_CODE_TARGET_ENDPOINT_UNREACHABLE = 1;
+  DELIVERY_ERROR_CODE_SERIALIZATION_ERROR = 2;
+  DELIVERY_ERROR_CODE_SCHEMA_MISMATCH = 3;
+  DELIVERY_ERROR_CODE_TIMEOUT = 4;
+  DELIVERY_ERROR_CODE_UNAUTHORIZED = 5;
+}
+
+enum FailureReason {
+  FAILURE_REASON_UNKNOWN = 0;
+  FAILURE_REASON_TARGET_ENDPOINT_UNREACHABLE = 1;
+  FAILURE_REASON_SERIALIZATION_ERROR = 2;
+  FAILURE_REASON_SCHEMA_MISMATCH = 3;
+  FAILURE_REASON_TIMEOUT = 4;
+  FAILURE_REASON_UNAUTHORIZED = 5;
+}
+
+message EndpointBinding {
+  string endpoint_id = 1;
+  EndpointType endpoint_type = 2;
+  string owner_domain = 3;
+  bool is_external = 4;
+}
+
+message MessageEnvelope {
+  bms.schema.common.CommonHeader header = 1;
+  string topic = 2;
+  string payload_type = 3;
+  bytes payload_bytes = 4;
+  bms.schema.common.QosProfile qos_profile = 5;
+}
+
+message SchemaDescriptor {
+  string payload_type = 1;
+  string schema_version = 2;
+  string schema_uri = 3;
+}
+
+message SubscriptionBinding {
+  string subscription_id = 1;
+  string topic = 2;
+  EndpointBinding subscriber = 3;
+  SubscriptionBindingStatus status = 4;
+  string status_reason = 5;
+}
+
+message DeliveryReceipt {
+  string receipt_id = 1;
+  string topic = 2;
+  string message_trace_id = 3;
+  string subscriber_endpoint_id = 4;
+  DeliveryStatus status = 5;
+  DeliveryErrorCode error_code = 6;
+  int64 delivered_at_utc_ms = 7;
+}
+
+message DeadLetterRecord {
+  string dead_letter_id = 1;
+  string original_topic = 2;
+  string payload_type = 3;
+  string message_trace_id = 4;
+  FailureReason failure_reason = 5;
+  uint32 retry_count = 6;
+  int64 last_attempt_utc_ms = 7;
+}
+
+message TopicDefinition {
+  string topic = 1;
+  string domain = 2;
+  string payload_type = 3;
+  bms.schema.common.QosProfile qos_profile = 4;
+  repeated EndpointBinding publishers = 5;
+  repeated EndpointBinding subscribers = 6;
+  TopicState topic_state = 7;
+  string owner_team = 8;
+  string schema_uri = 9;
+  int64 retention_ms = 10;
+}

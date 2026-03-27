@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package bms.schema.knowledge;
+
+option java_multiple_files = true;
+option java_package = "com.bms.schema.knowledge";
+option csharp_namespace = "Bms.Schema.Knowledge";
+
+import "bms/schema/common.proto";
+
+message InferenceRequest {
+  bms.schema.common.CommonHeader header = 1;
+  string request_id = 2;
+  string requester = 3;
+  string target_object_type = 4;
+  repeated string input_refs = 5;
+  string purpose = 6;
+  bool need_explanation = 7;
+}
+
+message RecommendationItem {
+  bms.schema.common.CommonHeader header = 1;
+  string recommendation_id = 2;
+  string recommendation_type = 3;
+  string source_rule_or_template_id = 4;
+  string summary = 5;
+  double confidence = 6;
+}

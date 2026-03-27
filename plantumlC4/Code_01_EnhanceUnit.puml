@@ -1,0 +1,152 @@
+@startuml Code_01_EnhanceUnit
+title BMS系统 - Code Diagram 01 协同增强单元分系统
+
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "接口适配层" as adapterLayer {
+    interface IProtocolAdapter
+    class TcpProtocolAdapter
+    class SerialProtocolAdapter
+    class GrpcProtocolAdapter
+    class VideoStreamAdapter
+    class ProtocolSessionManager
+    class MessageNormalizer
+    class LinkHealthSupervisor
+
+    IProtocolAdapter <|.. TcpProtocolAdapter
+    IProtocolAdapter <|.. SerialProtocolAdapter
+    IProtocolAdapter <|.. GrpcProtocolAdapter
+    IProtocolAdapter <|.. VideoStreamAdapter
+    ProtocolSessionManager --> IProtocolAdapter
+    ProtocolSessionManager --> LinkHealthSupervisor
+    ProtocolSessionManager --> MessageNormalizer
+}
+
+package "平台代理层" as agentLayer {
+    class PlatformCommandService
+    class PayloadCommandService
+    class WeaponCommandService
+    class PlatformStateCollector
+    class PayloadStateCollector
+    class WeaponStateCollector
+    class FlightSafetyGuard
+    class NoFlyZonePolicy
+    class CapabilityRegistryService
+
+    PlatformCommandService --> FlightSafetyGuard
+    FlightSafetyGuard --> NoFlyZonePolicy
+    PlatformStateCollector --> CapabilityRegistryService
+    PayloadStateCollector --> CapabilityRegistryService
+    WeaponStateCollector --> CapabilityRegistryService
+}
+
+package "能力增强层" as enhanceLayer {
+    class TargetDetectionPipeline
+    class TargetRecognitionService
+    class TargetLocalizationService
+    class TargetTrackingService
+    class TargetReportAssembler
+    class ImageEnhancementService
+    class KeyFrameExtractor
+    class ImageMosaicService
+
+    TargetDetectionPipeline --> TargetRecognitionService
+    TargetDetectionPipeline --> TargetLocalizationService
+    TargetDetectionPipeline --> TargetTrackingService
+    TargetDetectionPipeline --> TargetReportAssembler
+    ImageEnhancementService --> KeyFrameExtractor
+    ImageEnhancementService --> ImageMosaicService
+}
+
+package "协同任务执行层" as missionLayer {
+    class MissionExecutionService
+    class MissionPlanParser
+    class RouteTranslator
+    class PayloadModePlanner
+    class WeaponActionPlanner
+    class ExecutionTimelineCoordinator
+    class ExecutionAckPublisher
+    class ExceptionClassifier
+
+    MissionExecutionService --> MissionPlanParser
+    MissionExecutionService --> RouteTranslator
+    MissionExecutionService --> PayloadModePlanner
+    MissionExecutionService --> WeaponActionPlanner
+    MissionExecutionService --> ExecutionTimelineCoordinator
+    MissionExecutionService --> ExecutionAckPublisher
+    MissionExecutionService --> ExceptionClassifier
+}
+
+package "配置与集成层" as configLayer {
+    class UnitConfigService
+    class ConfigTemplateRepository
+    class ConfigDistributor
+    class PlatformGateway
+    class EventBusPublisher
+
+    UnitConfigService --> ConfigTemplateRepository
+    UnitConfigService --> ConfigDistributor
+}
+
+package "领域对象" as domainLayer {
+    class PlatformCommand
+    class MissionPlan
+    class RoutePlan
+    class PayloadProfile
+    class WeaponProfile
+    class PlatformState
+    class PayloadState
+    class WeaponState
+    class TargetTrack
+    class ExecutionException
+    class CapabilityProfile
+}
+
+ProtocolSessionManager --> PlatformGateway : normalized stream
+PlatformGateway --> PlatformCommandService
+PlatformGateway --> PayloadCommandService
+PlatformGateway --> WeaponCommandService
+PlatformGateway --> PlatformStateCollector
+PlatformGateway --> PayloadStateCollector
+PlatformGateway --> WeaponStateCollector
+
+MessageNormalizer --> PlatformState
+MessageNormalizer --> PayloadState
+MessageNormalizer --> WeaponState
+
+PlatformStateCollector --> EventBusPublisher : publish platform state
+PayloadStateCollector --> EventBusPublisher : publish payload state
+WeaponStateCollector --> EventBusPublisher : publish weapon state
+
+PlatformStateCollector --> TargetDetectionPipeline : raw sensor feed
+TargetDetectionPipeline --> EventBusPublisher : publish target reports
+ImageEnhancementService --> EventBusPublisher : publish image metadata
+
+MissionExecutionService --> PlatformCommandService
+MissionExecutionService --> PayloadCommandService
+MissionExecutionService --> WeaponCommandService
+MissionExecutionService --> EventBusPublisher : execution ack / exceptions
+
+MissionPlanParser --> MissionPlan
+RouteTranslator --> RoutePlan
+PayloadModePlanner --> PayloadProfile
+WeaponActionPlanner --> WeaponProfile
+PlatformCommandService --> PlatformCommand
+ExceptionClassifier --> ExecutionException
+CapabilityRegistryService --> CapabilityProfile
+
+note right of MissionExecutionService
+接收交战计划并转换为平台可执行动作序列。
+先做计划解析与时序编排，再驱动飞行、载荷和武器代理。
+end note
+
+note bottom of ExceptionClassifier
+统一分类执行异常：
+资源、航路、链路、威胁、载荷、天气、禁飞区、敌情突变、平台失联。
+end note
+
+@enduml

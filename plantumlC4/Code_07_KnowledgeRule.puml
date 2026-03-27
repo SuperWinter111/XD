@@ -1,0 +1,137 @@
+@startuml Code_07_KnowledgeRule
+title BMS系统 - Code Diagram 07 知识与规则管理分系统
+
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "规则治理层" as ruleLayer {
+    class CombatRuleService
+    class RuleVersionManager
+    class RuleValidator
+    class RuleConflictDetector
+    class RulePublicationService
+
+    CombatRuleService --> RuleVersionManager
+    CombatRuleService --> RuleValidator
+    CombatRuleService --> RuleConflictDetector
+    CombatRuleService --> RulePublicationService
+}
+
+package "模板治理层" as templateLayer {
+    class TacticTemplateService
+    class TaskTemplateService
+    class TemplateClassifier
+    class TemplateParameterizer
+    class TemplateEffectEvaluator
+    class TemplateVersionManager
+
+    TacticTemplateService --> TemplateClassifier
+    TacticTemplateService --> TemplateParameterizer
+    TacticTemplateService --> TemplateEffectEvaluator
+    TacticTemplateService --> TemplateVersionManager
+    TaskTemplateService --> TemplateClassifier
+    TaskTemplateService --> TemplateParameterizer
+    TaskTemplateService --> TemplateVersionManager
+}
+
+package "知识与条令层" as knowledgeLayer {
+    class TargetKnowledgeService
+    class ThreatFeatureService
+    class BehaviorPatternService
+    class DoctrineService
+    class ScenarioApplicabilityService
+
+    TargetKnowledgeService --> ThreatFeatureService
+    TargetKnowledgeService --> BehaviorPatternService
+    DoctrineService --> ScenarioApplicabilityService
+}
+
+package "推理执行层" as inferenceLayer {
+    class RuleInferenceFacade
+    class RuleMatchEngine
+    class TemplateMatchEngine
+    class ExplanationBuilder
+    class InferenceLogService
+    class RecommendationAssembler
+
+    RuleInferenceFacade --> RuleMatchEngine
+    RuleInferenceFacade --> TemplateMatchEngine
+    RuleInferenceFacade --> ExplanationBuilder
+    RuleInferenceFacade --> InferenceLogService
+    RuleInferenceFacade --> RecommendationAssembler
+}
+
+package "集成与持久化层" as integrationLayer {
+    class TaskMgmtQueryGateway
+    class BattleCtrlQueryGateway
+    class SitMgmtQueryGateway
+    class KnowledgeChangePublisher
+    class RuleRepository
+    class TemplateRepository
+    class KnowledgeRepository
+    class InferenceLogRepository
+}
+
+package "领域对象" as domainLayer {
+    class CombatRuleSet
+    class RuleVersion
+    class TacticTemplate
+    class TaskTemplate
+    class TemplateParameterProfile
+    class TargetFeatureProfile
+    class ThreatFeatureProfile
+    class BehaviorPattern
+    class DoctrineEntry
+    class InferenceRequest
+    class InferenceResult
+    class RecommendationItem
+}
+
+CombatRuleService --> CombatRuleSet
+RuleVersionManager --> RuleVersion
+TacticTemplateService --> TacticTemplate
+TaskTemplateService --> TaskTemplate
+TemplateParameterizer --> TemplateParameterProfile
+TargetKnowledgeService --> TargetFeatureProfile
+ThreatFeatureService --> ThreatFeatureProfile
+BehaviorPatternService --> BehaviorPattern
+DoctrineService --> DoctrineEntry
+RuleInferenceFacade --> InferenceRequest
+RecommendationAssembler --> RecommendationItem
+
+CombatRuleService --> RuleRepository : persist rules
+TacticTemplateService --> TemplateRepository : persist tactic templates
+TaskTemplateService --> TemplateRepository : persist task templates
+TargetKnowledgeService --> KnowledgeRepository : persist target knowledge
+DoctrineService --> KnowledgeRepository : persist doctrine entries
+RuleInferenceFacade --> InferenceLogRepository : persist inference log
+RulePublicationService --> KnowledgeChangePublisher : rule.changed event
+TemplateVersionManager --> KnowledgeChangePublisher : template.changed event
+RuleMatchEngine --> CombatRuleService : load active rules
+TemplateMatchEngine --> TacticTemplateService : load tactic templates
+TemplateMatchEngine --> TaskTemplateService : load task templates
+RuleInferenceFacade --> DoctrineService : load doctrine constraints
+RuleInferenceFacade --> TargetKnowledgeService : load feature knowledge
+TaskMgmtQueryGateway --> RuleInferenceFacade : task inference request
+BattleCtrlQueryGateway --> RuleInferenceFacade : engagement inference request
+SitMgmtQueryGateway --> RuleInferenceFacade : target/threat inference request
+
+note right of RuleInferenceFacade
+统一承接任务、交战、态势侧的规则推理请求。
+输出推理结果、推荐项和解释信息，但不直接替代业务分系统决策。
+end note
+
+note right of CombatRuleService
+规则与模板的主数据 ownership 归知识与规则管理分系统。
+业务分系统只能查询或请求推理，不能绕过这里自行维护主版本。
+end note
+
+note bottom of DoctrineService
+条令用于约束规则有效性和适用场景。
+它影响任务模板、战术模板和交战规则，但本身不是任务或计划对象。
+end note
+
+@enduml

@@ -1,0 +1,46 @@
+@startuml Supplementary_01_UavDigitalTwin
+!include <C4/C4_Container>
+
+title BMS系统 - 外部联合仿真补充图 01 无人平台数字模型
+caption 该图不属于 BMS 主线 C4 图集；它用于展开 BMS 外部系统“无人平台任务系统”在实验室条件下的数字模型内部结构
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+HIDE_STEREOTYPE()
+
+System_Ext(bms, "BMS系统", "通过协同增强单元与外部无人平台任务系统交互")
+System_Ext(enhanceUnit, "协同增强单元分系统", "接入无人平台任务系统")
+
+System_Boundary(uavDigitalTwin, "无人平台数字模型（外部联合仿真系统）") {
+    Container(simOrchestrator, "场景编排器", "Simulation Service", "场景装载、时钟控制、脚本调度")
+    Container(platformSim, "平台数字模型", "Simulation Service", "飞行运动学、任务系统、接口响应")
+    Container(sensorSim, "传感器数字模型", "Simulation Service", "光电/雷达探测、覆盖范围、误差模型")
+    Container(weaponSim, "武器数字模型", "Simulation Service", "挂载、发射、毁伤结果")
+    Container(targetSim, "目标数字模型", "Simulation Service", "可先由固定目标脚本实现，后续逐步演进为完整目标模型与真值能力")
+    Container(dataRecorder, "数据记录与回放服务", "Replay Service", "记录飞行、感知、打击与真值数据")
+    Container(interfaceAdapter, "任务系统接口适配器", "Adapter Service", "对外呈现统一的无人平台任务系统接口")
+}
+
+Rel(simOrchestrator, platformSim, "驱动平台脚本")
+Rel(simOrchestrator, sensorSim, "驱动传感器脚本")
+Rel(simOrchestrator, weaponSim, "驱动武器脚本")
+Rel(simOrchestrator, targetSim, "驱动目标模型")
+
+Rel(platformSim, sensorSim, "平台姿态/任务状态")
+Rel(platformSim, weaponSim, "挂载/发射状态")
+Rel(sensorSim, targetSim, "目标可见性校核")
+Rel(weaponSim, targetSim, "毁伤裁决")
+
+Rel(platformSim, interfaceAdapter, "飞行/任务状态")
+Rel(sensorSim, interfaceAdapter, "传感器状态/探测结果")
+Rel(weaponSim, interfaceAdapter, "武器状态/毁伤结果")
+
+Rel(dataRecorder, platformSim, "记录飞行数据")
+Rel(dataRecorder, sensorSim, "记录感知数据")
+Rel(dataRecorder, weaponSim, "记录武器数据")
+Rel(dataRecorder, targetSim, "记录目标模型与真值数据")
+
+Rel(enhanceUnit, interfaceAdapter, "指令/状态交互", "数字模型接口")
+Rel(interfaceAdapter, bms, "作为外部无人平台任务系统被 BMS 接入")
+
+@enduml

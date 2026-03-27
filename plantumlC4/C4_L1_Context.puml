@@ -1,0 +1,104 @@
+@startuml C4_L1_Context
+!include <C4/C4_Context>
+
+title BMS系统 - C4 Level 1 系统上下文图
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+' LAYOUT_LEFT_RIGHT()
+' LAYOUT_LANDSCAPE()
+
+' skinparam linetype ortho
+skinparam nodesep 70
+skinparam ranksep 100
+' ============================================================
+' 用户角色 (Persons)
+' ============================================================
+
+' -- 系统使用类 --
+Boundary(sysUser, "系统使用类") {
+    Person(bizManager, "业务管理人员", "制定作战计划、下达指令、\n监控态势、决策审批")
+    Person(bizUser, "业务使用人员", "执行任务操作、查看态势、\n操控无人平台、标绘协同")
+}
+
+' -- 系统运维类 --
+Boundary(sysOps, "系统运维类") {
+    Person(sysAdmin, "系统管理员", "系统安装、配置、\n维护、升级")
+    Person(opsStaff, "运维人员", "日常监控、故障排查、\n性能优化、备份恢复")
+    Person(devTester, "开发/测试人员", "部署代码、查看日志、\n监控性能、问题诊断")
+    Person(dba, "数据库管理员", "数据库备份、性能调优、\n容量规划、安全审计")
+}
+
+' -- 系统配套类 --
+Boundary(sysSupport, "系统配套类") {
+    Person_Ext(uavVendor, "无人平台厂商", "提供无人平台接入适配、\n固件升级、技术支持")
+    Person_Ext(commVendor, "通信厂商", "提供通信设备接入适配、\n链路保障、技术支持")
+}
+
+' ============================================================
+' 核心系统 (System)
+' ============================================================
+
+System(bms, "BMS系统", "战场管理系统\n提供态势感知、任务管理、\n交战管控、资源管理、\n通信组网等核心能力")
+
+' ============================================================
+' 外部系统 (External Systems)
+' ============================================================
+
+' -- 上级系统 --
+Boundary(upperSys, "上级系统") {
+    System_Ext(superiorCmd, "上级指控系统", "下达作战指令、接收态势上报、\n任务审批与监管（P1: 纯指令仿真注入）")
+}
+
+' -- 下级系统 --
+Boundary(lowerSys, "下级系统") {
+    System_Ext(uavSystem, "无人平台任务系统", "实验室阶段可由无人平台数字模型替代，\n工程阶段由地面站/无人平台任务系统/实机共同构成")
+}
+
+' -- 横向协同 --
+Boundary(horizontalSys, "横向协同系统") {
+    System_Ext(khSystem, "KH协同系统", "横向态势共享、\n协同任务协调")
+    System_Ext(kdSystem, "KD协同系统", "横向态势共享、\n协同任务协调")
+}
+
+' -- 前后衔接 --
+Boundary(frontBackSys, "前后系统") {
+    System_Ext(planSystem, "筹划系统", "提供作战筹划数据、\n预案与计划输入")
+    System_Ext(analysisSystem, "数据分析系统", "接收作战数据、\n提供战后分析与评估")
+}
+
+' ============================================================
+' 关系 (Relationships)
+' ============================================================
+
+' -- 使用类用户 → BMS --
+Rel_D(bizManager, bms, "制定计划、下达指令、\n审批决策、监控态势")
+Rel_D(bizUser, bms, "执行任务操作、查看态势、\n操控平台、标绘协同")
+
+' -- 运维类用户 → BMS --
+Rel_D(sysAdmin, bms, "系统配置与维护")
+Rel_D(opsStaff, bms, "监控运维与故障处理")
+Rel_D(devTester, bms, "部署测试与问题诊断")
+Rel_D(dba, bms, "数据库运维管理")
+
+' -- 配套类用户 → BMS --
+Rel_D(uavVendor, bms, "平台接入适配与技术支持", "接口协议")
+Rel_D(commVendor, bms, "通信设备接入与链路保障", "接口协议")
+
+' -- BMS ↔ 上级系统 --
+Rel_U(bms, superiorCmd, "上报态势与任务状态", "数据链/专用协议")
+Rel_U(superiorCmd, bms, "下达作战指令与审批", "数据链/专用协议")
+
+' -- BMS ↔ 下级系统 --
+Rel_U(bms, uavSystem, "下发遥控指令与任务计划", "数据链/专用协议")
+Rel_U(uavSystem, bms, "上报平台状态、载荷数据与侦察结果", "数据链/专用协议")
+
+' -- BMS ↔ 横向协同 --
+Rel_D(bms, khSystem, "态势共享与任务协调", "协同数据链")
+Rel_D(bms, kdSystem, "态势共享与任务协调", "协同数据链")
+
+' -- BMS ↔ 前后系统 --
+Rel_U(planSystem, bms, "输入筹划数据与预案", "数据接口")
+Rel_U(bms, analysisSystem, "输出作战数据与记录", "数据接口")
+
+@enduml

@@ -1,0 +1,2 @@
+#include "wp09_authaudit/access_policy_evaluator.h"
+namespace wp09_authaudit { AccessDecisionRecord AccessPolicyEvaluator::evaluate(const UserAction& userAction) const { return AccessDecisionRecord{userAction.traceId, userAction.actorId, userAction.action, !userAction.privileged || userAction.actorId == "ops-admin", userAction.privileged ? "privileged_check" : "standard_allow"}; } }

@@ -1,0 +1,193 @@
+@startuml Code_09_DomainObjectMap
+title BMS系统 - Code Diagram 09 跨分系统领域对象关系图
+
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "任务语义 / TaskMgmt" as taskLayer {
+    class MissionCommand
+    class TaskIntent
+    class TaskConstraint
+    class TaskGraph
+    class TaskScheme
+    class TaskPackage
+    class TaskExecutionSnapshot
+    class EffectivenessReport
+
+    MissionCommand --> TaskIntent
+    TaskIntent --> TaskConstraint
+    TaskConstraint --> TaskGraph
+    TaskGraph --> TaskScheme
+    TaskScheme --> TaskPackage
+    TaskExecutionSnapshot --> EffectivenessReport
+}
+
+package "态势语义 / SitMgmt" as sitLayer {
+    class RawTargetInput
+    class FusedTrack
+    class ThreatAssessment
+    class SituationPicture
+    class InferenceResult
+
+    RawTargetInput --> FusedTrack
+    FusedTrack --> ThreatAssessment
+    FusedTrack --> SituationPicture
+    SituationPicture --> InferenceResult
+}
+
+package "资源语义 / ResMgmt" as resLayer {
+    class ResourceRegistration
+    class ResourceIdentity
+    class ResourceDescriptor
+    class ResourceStateSnapshot
+    class CapabilityProfile
+    class TaskCapabilityMatrix
+    class AllocationRequest
+    class AllocationDecision
+    class ReservationTicket
+
+    ResourceRegistration --> ResourceIdentity
+    ResourceIdentity --> ResourceDescriptor
+    ResourceDescriptor --> ResourceStateSnapshot
+    ResourceStateSnapshot --> CapabilityProfile
+    CapabilityProfile --> TaskCapabilityMatrix
+    AllocationRequest --> AllocationDecision
+    AllocationDecision --> ReservationTicket
+}
+
+package "消息契约语义 / MsgService" as msgLayer {
+    class TopicDefinition
+    class SchemaDescriptor
+    class MessageEnvelope
+    class SubscriptionBinding
+    class DeliveryReceipt
+    class DeadLetterRecord
+
+    TopicDefinition --> SchemaDescriptor
+    SchemaDescriptor --> MessageEnvelope
+    MessageEnvelope --> SubscriptionBinding
+    SubscriptionBinding --> DeliveryReceipt
+    SubscriptionBinding --> DeadLetterRecord
+}
+
+package "知识规则语义 / KnowledgeRule" as knowledgeLayer {
+    class CombatRuleSet
+    class TaskTemplate
+    class TacticTemplate
+    class DoctrineEntry
+    class InferenceRequest
+    class RecommendationItem
+
+    InferenceRequest --> CombatRuleSet
+    InferenceRequest --> TaskTemplate
+    InferenceRequest --> TacticTemplate
+    InferenceRequest --> DoctrineEntry
+    CombatRuleSet --> RecommendationItem
+    TaskTemplate --> RecommendationItem
+    TacticTemplate --> RecommendationItem
+    DoctrineEntry --> RecommendationItem
+}
+
+package "通信语义 / CommNet" as commLayer {
+    class LinkSession
+    class LinkProfile
+    class TopologySnapshot
+    class RoutePath
+    class LinkQualitySnapshot
+    class DegradationAlert
+    class SecurityEvent
+
+    LinkSession --> LinkProfile
+    LinkProfile --> TopologySnapshot
+    TopologySnapshot --> RoutePath
+    RoutePath --> LinkQualitySnapshot
+    LinkQualitySnapshot --> DegradationAlert
+    LinkQualitySnapshot --> SecurityEvent
+}
+
+package "计划语义 / BattleCtrl" as planLayer {
+    class BattlePlan
+    class FormationScheme
+    class RouteSegment
+    class SensorProfile
+    class WeaponProfile
+    class AdjustmentOption
+    class EngagementEffectReport
+
+    BattlePlan --> FormationScheme
+    BattlePlan --> RouteSegment
+    BattlePlan --> SensorProfile
+    BattlePlan --> WeaponProfile
+    BattlePlan --> AdjustmentOption
+    BattlePlan --> EngagementEffectReport
+}
+
+package "执行语义 / EnhanceUnit + BattleCtrl" as execLayer {
+    class PlatformCommand
+    class ExecutionStateSnapshot
+    class ExecutionException
+
+    PlatformCommand --> ExecutionStateSnapshot
+    ExecutionStateSnapshot --> ExecutionException
+}
+
+' 主业务跨域关系
+TaskConstraint --> AllocationRequest : resource prerequisite
+TaskCapabilityMatrix --> TaskGraph : decomposition support
+AllocationDecision --> TaskPackage : confirmed allocation
+
+TaskPackage --> BattlePlan : formal task input
+FusedTrack --> BattlePlan : target context
+ThreatAssessment --> BattlePlan : threat constraint
+InferenceResult --> BattlePlan : situation reasoning context
+RecommendationItem --> BattlePlan : tactic recommendation
+RecommendationItem --> TaskScheme : task recommendation
+
+CombatRuleSet --> TaskConstraint : rule constraint
+TaskTemplate --> TaskGraph : task decomposition template
+TacticTemplate --> BattlePlan : plan template
+DoctrineEntry --> TaskConstraint : doctrine constraint
+DoctrineEntry --> BattlePlan : doctrine constraint
+
+LinkQualitySnapshot --> ResourceStateSnapshot : link health input
+DegradationAlert --> ExecutionException : comm degradation
+SecurityEvent --> ExecutionException : comm security impact
+
+BattlePlan --> PlatformCommand : executable command set
+ExecutionStateSnapshot --> TaskExecutionSnapshot : mission progress
+ExecutionStateSnapshot --> EngagementEffectReport : effect evidence
+ExecutionException --> AdjustmentOption : in-constraint adjustment
+ExecutionException --> TaskConstraint : out-of-constraint reconstruction trigger
+EngagementEffectReport --> EffectivenessReport : task effectiveness input
+
+' 消息承载关系
+TopicDefinition --> TaskPackage : topic governance
+TopicDefinition --> BattlePlan : topic governance
+TopicDefinition --> FusedTrack : topic governance
+TopicDefinition --> ResourceStateSnapshot : topic governance
+MessageEnvelope --> TaskPackage : transport envelope
+MessageEnvelope --> BattlePlan : transport envelope
+MessageEnvelope --> FusedTrack : transport envelope
+MessageEnvelope --> ExecutionStateSnapshot : transport envelope
+
+note right of TaskPackage
+任务层到计划层的唯一正式输入。
+end note
+
+note right of BattlePlan
+计划语义对象，不回写任务定义。
+end note
+
+note bottom of MessageEnvelope
+所有跨分系统事件和状态对象都经由统一包络传输。
+包络治理不改变业务对象语义。
+end note
+
+note bottom of ExecutionException
+先尝试计划级调整；越出任务边界时触发任务重构。
+end note
+
+@enduml

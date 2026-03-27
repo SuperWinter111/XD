@@ -1,0 +1,86 @@
+@startuml C4_L3_Component_05_BattleCtrl
+!include <C4/C4_Component>
+
+title 交战管控分系统 - C4 Level 3 组件图
+caption 业务应用层 / 交战管控分系统
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+' ============================================================
+' 外部依赖容器
+' ============================================================
+
+Container(hmi, "人机交互分系统", "Web前端/GIS引擎", "临机决策、编队与航路交互")
+Container(taskMgmt, "任务管理分系统", "业务服务", "下发作战任务")
+Container(sitMgmt, "态势管理分系统", "业务服务", "态势与威胁信息")
+Container(resMgmt, "资源管理分系统", "业务服务", "资源状态与能力")
+Container(enhanceUnit, "协同增强单元分系统", "边缘代理", "协同任务执行")
+Container(msgBus, "数据交换与消息服务分系统", "消息中间件", "消息发布/订阅")
+Container(knowledgeRule, "知识与规则管理分系统", "规则引擎", "战术模板/交战规则")
+ContainerDb(dbMgmt, "数据库管理分系统", "数据库集群", "交战数据存储")
+
+' ============================================================
+' 交战管控分系统边界
+' ============================================================
+
+Container_Boundary(battleCtrl, "交战管控分系统") {
+
+    Component(taskParse, "任务解析模块", "解析器", "作战任务接收与解析\n约束条件提取\n交战规则加载\n任务可执行性评估\n任务与计划语义转换")
+
+    Component(formationMgmt, "编队管理模块", "编队引擎", "编队构型优选\n成员能力评估\n通信组网协调\n编队协同控制/重构/保持")
+
+    Component(tacticMatch, "战术模板匹配模块", "匹配引擎", "战术场景识别\n战术模板相似度匹配\n参数适配与调优\n战术模板推荐")
+
+    Component(battlePlan, "交战计划生成模块", "规划引擎", "搜索计划(区域搜索/监视/侦察)\n攻击计划(单/协同/多目标打击)\n防御计划(区域/阵位/预警)\n协同规划(航路/传感器/武器)\n计划冲突检测与消解\n任务约束满足性校核")
+
+    Component(planExecMonitor, "计划执行监控模块", "调度引擎", "执行进度监控\n异常分类与告警\n执行状态实时上报\n计划流程控制\n应急处理")
+
+    Component(battleEval, "交战效果评估模块", "评估引擎", "打击效果评估\n目标毁伤评估\n二次打击需求判断\n交战效果报告生成")
+}
+
+' ============================================================
+' 输入
+' ============================================================
+
+Rel_D(hmi, battlePlan, "人工调整计划参数", "REST API")
+Rel_D(hmi, formationMgmt, "编队管控操作", "REST API")
+Rel_D(taskMgmt, taskParse, "下发作战任务", "API")
+
+' ============================================================
+' 内部流程: 任务解析→编队+战术→计划→监控→评估
+' ============================================================
+
+Rel_R(taskParse, formationMgmt, "任务→编队规划")
+Rel_D(taskParse, tacticMatch, "任务→战术匹配")
+Rel_D(tacticMatch, battlePlan, "战术模板→计划生成")
+Rel_D(formationMgmt, battlePlan, "编队方案→计划生成")
+Rel_D(battlePlan, planExecMonitor, "下发计划→执行监控")
+Rel_R(planExecMonitor, battlePlan, "执行异常→计划调整")
+Rel_D(planExecMonitor, battleEval, "执行数据→效果评估")
+
+' ============================================================
+' 外部依赖
+' ============================================================
+
+Rel_L(taskParse, sitMgmt, "获取当前态势", "API")
+Rel_L(battlePlan, sitMgmt, "获取威胁信息", "API")
+Rel_L(battlePlan, resMgmt, "查询可用资源/能力", "API")
+Rel_L(formationMgmt, resMgmt, "查询成员状态", "API")
+
+Rel_D(planExecMonitor, enhanceUnit, "下发交战计划/指令", "内部消息")
+Rel_U(enhanceUnit, planExecMonitor, "上报执行状态", "内部消息")
+Rel_D(planExecMonitor, taskMgmt, "计划失配→任务重构请求", "API")
+Rel_U(planExecMonitor, hmi, "不可自动调整→人工介入提示", "WebSocket")
+Rel_D(hmi, battlePlan, "人工调整计划内容", "REST API")
+
+Rel_D(tacticMatch, knowledgeRule, "查询战术模板", "API")
+Rel_D(taskParse, knowledgeRule, "加载交战规则", "API")
+
+Rel_D(battlePlan, dbMgmt, "读写交战计划", "SQL")
+Rel_D(battleEval, dbMgmt, "写入评估报告", "SQL")
+
+Rel_D(planExecMonitor, msgBus, "发布执行状态消息", "Pub/Sub")
+Rel_D(battleEval, msgBus, "发布评估结果", "Pub/Sub")
+
+@enduml

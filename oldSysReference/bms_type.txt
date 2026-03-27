@@ -1,0 +1,1067 @@
+namespace BMS
+{
+  // 上线请求
+  	struct OnlineRequest
+	{
+		uint16_t msgID = 0;
+		long timestamp = 0;
+		int platformID = 0;
+		u_char quest = 0;
+		MSGPACK_DEFINE(msgID, timestamp, platformID, quest);
+	};
+
+  // 上线答复
+	struct OnlineReply
+	{
+		uint16_t msgID = 0;
+		long timestamp = 0;
+		int platformID = 0;
+		u_char reply = 0;
+		MSGPACK_DEFINE(msgID, timestamp, platformID, reply);
+	};
+
+  // 时间同步
+  struct CurrentTime
+  {
+    uint16_t msgID = 0;
+    long timestamp = 0;
+
+    MSGPACK_DEFINE(msgID,timestamp);
+  };
+
+  // 心跳消息
+  struct HeartBeat
+  {
+    uint16_t msgID = 0;
+    long timestamp = 0;
+    int  platformID = 0;
+    
+    MSGPACK_DEFINE(msgID,timestamp,platformID);
+  };
+
+  // 光电传感器属性
+  // struct PhotoelectricSensorProperty
+  // {
+  //   float maxCoverage = 0;
+  //   u_char minSpanTime = 0;
+  //   u_char maxDealBatchCount = 0;
+  //   u_char maxSearchTargetCount = 0;
+  //   u_char maxTrackTargetCount = 0;
+  //   short int searchOrTrackRange = 0;
+  //   u_char trackAccuracy = 0;
+  //   u_char timeOfCaptureToTrack = 0;
+  //   short int imageFieldofView = 0;
+  //   short int imageFieldofResolution = 0;
+  //   u_char workingWaveLength = 0;
+  //   u_char methodOfDistanceMeasurement = 0;
+  //   u_char accuracyOfDistanceMeasurement = 0;
+  //   u_char detectionRateOfTarget = 0;
+  //   u_char recognitionRateOfTarget = 0;
+  //   u_char detectFalseAlarmRateOfTarget = 0;
+  //   u_char grayscaleOfImage = 0;
+
+  //   MSGPACK_DEFINE(maxCoverage,minSpanTime,maxDealBatchCount,maxSearchTargetCount,maxTrackTargetCount,
+  //                   searchOrTrackRange,trackAccuracy,timeOfCaptureToTrack,imageFieldofView,imageFieldofResolution,
+  //                   workingWaveLength,methodOfDistanceMeasurement,accuracyOfDistanceMeasurement,detectionRateOfTarget,
+  //                   recognitionRateOfTarget,detectFalseAlarmRateOfTarget,grayscaleOfImage);
+  // };
+
+  // 反辐射传感器属性
+  // struct AntiRadiationSensorProperty
+  // {
+  //   float maxCoverage = 0;
+  //   u_char minSpanTime = 0;
+  //   u_char maxDealBatchCount = 0;
+  //   u_char maxSearchTargetCount = 0;
+  //   u_char maxTrackTargetCount = 0;
+  //   u_char reconnaissanceBandwidth = 0;
+  //   float emissionBand = 0;
+  //   float repetitiveFrequencyAdaptability = 0;
+  //   u_char polarizationAdaptability = 0;
+  //   u_char modulationSignalAdaptability = 0;
+  //   float accuracyOfLocation = 0;
+  //   short int rangeOfView = 0;
+  //   u_char detectionRateOfTarget = 0;
+  //   u_char recognitionRateOfTarget = 0;
+  //   u_char detectFalseAlarmRateOfTarget = 0;
+  //   u_char distanceOfDeceptionCover = 0;
+
+  //   MSGPACK_DEFINE(maxCoverage,minSpanTime,maxDealBatchCount,maxSearchTargetCount,maxTrackTargetCount,
+  //                   reconnaissanceBandwidth,emissionBand,repetitiveFrequencyAdaptability,polarizationAdaptability,
+  //                   modulationSignalAdaptability,accuracyOfLocation,rangeOfView,detectionRateOfTarget,
+  //                   recognitionRateOfTarget,detectFalseAlarmRateOfTarget,distanceOfDeceptionCover);
+  // };
+
+  // 雷达传感器属性
+  // struct RadarSensorProperty
+  // {
+  //   float maxCoverage = 0;
+  //   u_char minSpanTime = 0;
+  //   u_char maxDealBatchCount = 0;
+  //   u_char maxSearchTargetCount = 0;
+  //   u_char maxTrackTargetCount = 0;
+  //   float accuracyOfLocation = 0;
+  //   float timeOfImage = 0;
+  //   short int distanceOfImage = 0;
+  //   float resolutionOfImage = 0;
+  //   float widthOfImage = 0;
+  //   u_char detectionRateOfTarget = 0; 
+  //   u_char detectFalseAlarmRateOfTarget = 0;
+
+  //   MSGPACK_DEFINE(maxCoverage,minSpanTime,maxDealBatchCount,maxSearchTargetCount,maxTrackTargetCount,
+  //                   accuracyOfLocation,timeOfImage,distanceOfImage,
+  //                   resolutionOfImage,widthOfImage,detectionRateOfTarget,detectFalseAlarmRateOfTarget);
+  // };
+
+  // 武器属性
+  struct WeaponProperty
+  {
+	u_char weaponType = 0;  //武器类型，0-无效，1-小直径炸弹，2-激光制导炸弹，3-火箭弹,4-
+	u_char weaponCount = 0;  //武器数量，0~255
+	float maxStrickDistance = 0;  //武器最大攻击距离，km
+	float minStrickDistance = 0;  //武器最小攻击距离，km
+	MSGPACK_DEFINE(weaponType, weaponCount, maxStrickDistance, minStrickDistance);
+  };
+
+  	// 传感器属性
+	struct SensorType
+	{
+		u_char sensorType = 0;	//传感器类型，0-未定义，1-光电，2-红外，3-雷达，4-反辐射，5-激光
+		MSGPACK_DEFINE(sensorType);
+	};
+
+  // 平台特性 1005
+  struct PlatformProperty
+  {
+    PlatformProperty()
+    {
+      std::vector<WeaponProperty>().swap(weaponPropertyVec);
+      std::vector<SensorType>().swap(sensorTypeVec);
+    }
+
+    uint16_t msgID = 0;
+	long timestamp = 0;
+	int platformID = 0;
+	u_char lengthOfPlatformName = 0;
+	string platformName = "";
+	u_char platformType = 0;
+	u_char motivationType = 0;
+	float maxFlightWeight = 0;
+	float payload = 0;
+	float fuelCapacity = 0;
+	uint32_t maxFlightTime = 0;
+
+	float maxVelocity = 0;
+	float cruisingVelocity = 0;
+	float minVelocity = 0;
+
+	float maxTurnRadius = 0;
+	float minTurnRadius = 0;
+
+	float ceiling = 0;
+	u_char risingWindResistance = 0;
+	u_char airWindResistance = 0;
+
+	// 传感器数量
+	u_char sensorCount = 0;
+	std::vector<SensorType> sensorTypeVec;
+
+	// 武器数量
+	u_char weaponTypeCount = 0;
+	std::vector<WeaponProperty> weaponPropertyVec;
+
+	MSGPACK_DEFINE(msgID, timestamp, platformID, lengthOfPlatformName, platformName, platformType, motivationType,
+		maxFlightWeight, payload, fuelCapacity, maxFlightTime, maxVelocity,
+		cruisingVelocity, minVelocity, maxTurnRadius,minTurnRadius,
+		ceiling, risingWindResistance, airWindResistance,
+		sensorCount,sensorTypeVec,weaponTypeCount,weaponPropertyVec);
+  };
+
+  // 可用武器属性
+  struct AvaliableWeapon
+  {
+    u_char weaponType = 0;
+    int weaponCount = 0;
+    
+    MSGPACK_DEFINE(weaponType,weaponCount);
+  };
+
+  struct SensorStatus
+  {
+	u_char sensorType = 0;
+	u_char sensorFlag = 0;
+
+	MSGPACK_DEFINE(sensorType,sensorFlag);
+  };
+
+  // 光电传感器状态 28
+  // struct PhotoelectricSensorStatus
+  // {
+  //   u_char open = 0;
+  //   u_char avaliable = 0;
+  //   u_char workMode = 0;
+  //   u_char trackStatus = 0;
+  //   float yawOfRealTimeAimingLine = 0;
+  //   float pitchOfRealTimeAimingLine = 0;
+  //   float azimuthCenterOfScan = 0;
+  //   float rangeOfDirectionalCoverage = 0;
+  //   float altitudeCenterOfScan = 0;
+  //   float rangePitchCoverage = 0;
+
+  //   MSGPACK_DEFINE(open,avaliable,workMode,trackStatus,yawOfRealTimeAimingLine,pitchOfRealTimeAimingLine,azimuthCenterOfScan,
+  //                   rangeOfDirectionalCoverage,altitudeCenterOfScan,rangePitchCoverage);
+  // };
+
+  // 反辐射传感器状态 20
+  // struct AntiRadiationSensorStatus
+  // {
+  //   u_char open = 0;
+  //   u_char avaliable = 0;
+  //   u_char workMode = 0;
+  //   u_char trackStatus = 0;
+  //   float azimuthCenterOfScan = 0;
+  //   float rangeOfDirectionalCoverage = 0;
+  //   float altitudeCenterOfScan = 0;
+  //   float rangePitchCoverage = 0;
+
+  //   MSGPACK_DEFINE(open,avaliable,workMode,trackStatus,azimuthCenterOfScan,
+  //                   rangeOfDirectionalCoverage,altitudeCenterOfScan,rangePitchCoverage);
+  // };
+
+  // 雷达传感器状态 20
+  // struct RadarSensorStatus
+  // {
+  //   u_char open = 0;
+  //   u_char avaliable = 0;
+  //   u_char workMode = 0;
+  //   u_char trackStatus = 0;
+  //   float azimuthCenterOfScan = 0;
+  //   float rangeOfDirectionalCoverage = 0;
+  //   float altitudeCenterOfScan = 0;
+  //   float rangePitchCoverage = 0;
+
+  //   MSGPACK_DEFINE(open,avaliable,workMode,trackStatus,azimuthCenterOfScan,
+  //                   rangeOfDirectionalCoverage,altitudeCenterOfScan,rangePitchCoverage);
+  // };
+
+  // 平台状态
+  struct PlatformStatus
+  {
+		PlatformStatus()
+		{
+		std::vector<AvaliableWeapon>().swap(avaliableWeaponVec);
+		}
+		uint16_t msgID = 0;
+		long timestamp = 0;
+		int platformID = 0;
+		float remainingOil = 0;
+		uint32_t remainingFlightTime = 0;
+		u_char healthStatus = 0;
+		double longtitude = 0;       //MSGPACK保留小数点后四位，精度不够，发送经纬度乘1000，接收除1000
+		double latitude = 0;         //MSGPACK保留小数点后四位，精度不够，发送经纬度乘1000，接收除1000
+		float altitude = 0;
+		float velocity = 0;
+		float northVelocity = 0;
+		float eastVelocity = 0;
+		float groundVelocity = 0;
+		float yaw = 0;
+		float pitch = 0;
+		float roll = 0;
+		u_char taskStatus = 0;   //0-空闲，1-执行中, 2-返航
+		u_char lengthOfTaskID = 0;
+		string taskID = "";
+
+		// 传感器数量
+		u_char sensorCount = 0;
+		std::vector<SensorStatus> sensorStatusVec;
+
+		// 武器信息
+		u_char avaliableWeaponCount = 0;
+		std::vector<AvaliableWeapon> avaliableWeaponVec;
+
+		MSGPACK_DEFINE(msgID, timestamp, platformID, remainingOil, remainingFlightTime, healthStatus,
+			longtitude, latitude, altitude, yaw, pitch, roll,
+			velocity, northVelocity, eastVelocity, groundVelocity,
+			taskStatus, lengthOfTaskID, taskID,
+			sensorCount, sensorStatusVec,
+			avaliableWeaponCount, avaliableWeaponVec);
+  };
+
+  struct PlatformInfo
+  {
+	uint16_t msgID = 0;  //0203
+	long timestamp = 0;
+	int platformID = 0;  //平台编号，0-无效，100001~100099,200001~200099,300001~300099,400001~400099
+	u_char lengthOfPlatformName = 0;  //平台名称长度
+	string platformName = "";  //平台名称
+	u_char platformType = 0;  //平台类型，0-无效，1-察打无人机
+	//这一部分文件中没有
+	double longtitude = 0;
+	double latitude = 0;
+	float altitude = 0;
+	float velocity = 0;
+	float yaw = 0;
+
+	u_char motivationType = 0; //动力类型，0-无效，1-燃油发动机，2-电动发动机，3-混合动力
+	float maxFlightWeight = 0; //最大起飞重量
+	float payload = 0; //有效载荷
+	float fuelCapacity = 0;  //油箱容量
+	uint32_t maxFlightTime = 0;  //最大航时
+
+	float maxVelocity = 0;  //最大速度，m/s
+	float cruisingVelocity = 0;  //巡航速度，m/s
+	float minVelocity = 0;  //最小速度，m/s
+
+	float maxTurnRadius = 0;  //最大转弯半径，m
+	float minTurnRadius = 0;  //最小转弯半径，m
+
+	float ceiling = 0;  //升限，m
+	u_char risingWindResistance = 0;  //起降抗风能力，0-无效；1-等级0，无抗风能力；2-等级1，可抵抗5级以下风速；3-等级2，可抵抗10级以下风速；4-等级3，可抵抗15级以下风速；5-等级4，可抵抗20级以下风速；6-等级5，可抵抗25级以上风速。
+	u_char airWindResistance = 0;  //空中抗风能力，0-无效；1-等级0，无抗风能力；2-等级1，可抵抗5级以下风速；3-等级2，可抵抗10级以下风速；4-等级3，可抵抗15级以下风速；5-等级4，可抵抗20级以下风速；6-等级5，可抵抗25级以上风速。
+
+	// 传感器数量
+	u_char sensorCount = 0;  //传感器类型数
+	std::vector<SensorType> sensorTypeVec;
+
+	// 武器数量
+	u_char weaponTypeCount = 0;  //武器类型数
+	std::vector<WeaponProperty> weaponPropertyVec;
+
+
+	MSGPACK_DEFINE(msgID, timestamp, platformID, lengthOfPlatformName, platformName, platformType, 
+		longtitude,latitude,altitude,velocity,yaw,
+		motivationType,maxFlightWeight, payload, fuelCapacity, maxFlightTime, maxVelocity,
+		cruisingVelocity, minVelocity, maxTurnRadius,minTurnRadius,
+		ceiling, risingWindResistance, airWindResistance,
+		sensorCount,sensorTypeVec,weaponTypeCount,weaponPropertyVec);
+  };
+
+  // 目标特性
+  struct TargetProperty
+  {
+	uint16_t msgID = 0;
+	long timestamp = 0;
+	uint32_t targetID = 0;  //目标编号
+	int targetSource = 0;  //目标来源，0-无效
+	u_char modify = 0;  //是否变更，0-否，1-是
+	u_char modifySource = 0;  //变更来源，0-无效
+	u_char interestDegree = 0;  //0-无效；1-TOI；2-TOT；3-非目标
+	u_char camp = 0;  //0-无效；1-敌方（FOE）；2-友方（Friend）；3-中立（Neutral）；4-不明（UNKWN）
+	u_char type = 0;  //目标类型，0-无效；
+	u_char country = 0; //目标归属国家地区；
+	u_char lengthOfName = 0; //目标名称长度
+	string name = ""; //目标名称
+	u_char timeSensitive = 0;  //目标时敏特性，0-无效，1-非时敏目标，2-时敏目标
+	uint16_t effectiveStrikeTime = 0;  //目标有效打击时间
+	u_char mobility = 0; //目标机动能力，0-无效，1-固定目标，2-机动目标
+	u_char dectectionMethod = 0;  //目标探测方式，0-无效，1-雷达探测，2-光电探测
+	float dectectionRange = 0;  //目标探测距离
+	float rangeOfHorizontalDetectionAngle = 0;  //目标水平探测角度范围
+	float rangeOfVerticalDetectionAngle = 0;  //目标垂直探测角度范围
+	float heightOfWeaponAttack = 0;  //目标武器攻击高度
+	float distanceOfWeaponAttack = 0;  //目标武器攻击距离
+	u_char ballisticTypeOfWeapon = 0;  //目标武器弹道类型，0-无效，1-直射，2-曲射
+	u_char characteristicsOfInfraredRadiation = 0;  //目标红外辐射特征
+	int centerFrequencyOfElectromagneticRadiationcharacteristics = 0;  //目标电磁辐射特征-中心频率
+	int pulseWidthOfElectromagneticRadiationcharacteristics = 0;  //目标电磁辐射特征-脉宽
+	u_char agileModeOfElectromagneticRadiationcharacteristics = 0;  //目标电磁辐射特征-捷变模式
+	u_char polarizationModeOfElectromagneticRadiationcharacteristics = 0;  //目标电磁辐射特征-极化方式
+	float length = 0;  //目标外形尺寸-长度
+	float width = 0;  //目标外形尺寸-宽度
+	float height = 0;  //目标外形尺寸-高度
+	u_char protectionCapability = 0;  //目标防护能力，0-无防护，1-装甲防护，2-混凝土掩体
+
+	MSGPACK_DEFINE(msgID, timestamp, targetID, targetSource, modify, modifySource, interestDegree, camp, type, country,
+		lengthOfName, name, timeSensitive,effectiveStrikeTime, mobility, dectectionMethod, dectectionRange, 
+		rangeOfHorizontalDetectionAngle,
+		rangeOfVerticalDetectionAngle, heightOfWeaponAttack, distanceOfWeaponAttack, ballisticTypeOfWeapon,
+		characteristicsOfInfraredRadiation, centerFrequencyOfElectromagneticRadiationcharacteristics,
+		pulseWidthOfElectromagneticRadiationcharacteristics, agileModeOfElectromagneticRadiationcharacteristics,
+		polarizationModeOfElectromagneticRadiationcharacteristics, length, width, height, protectionCapability);
+  };
+
+  // 目标状态
+	struct TargetStatus
+	{
+		uint16_t msgID = 0;  //0103
+		long timestamp = 0;
+		int targetID = 0;  //目标编号
+		int targetSource = 0;  //目标来源，0-无效
+		u_char coordinateSystem = 0;  //坐标系，0未定义，1-地理坐标
+		double longtitude = 0;  //目标经度  //MSGPACK保留小数点后四位，精度不够，发送经纬度乘1000，接收除1000
+		double latitude = 0;  //目标纬度   //MSGPACK保留小数点后四位，精度不够，发送经纬度乘1000，接收除1000
+		float altitude = 0;  //目标高度
+		u_char status = 0;  //目标状态，0-无效、1-完好、2-轻度毁伤、3-中度毁伤、4-重度毁伤、5-摧毁
+
+		MSGPACK_DEFINE(msgID, timestamp, targetID, targetSource, coordinateSystem, longtitude, latitude, altitude, status);
+	};
+
+	struct TargetInfo28
+	{
+		uint16_t msgID = 0;  //收0102、发0205
+		long timestamp = 0;
+		uint32_t targetID = 0;  //目标编号
+		int targetSource = 0;  //目标来源，0-无效
+		u_char modify = 0;  //是否变更，0-否，1-是
+		u_char modifySource = 0;  //变更来源，0-无效
+		u_char interestDegree = 0;  //目标威胁程度，0-无效；1-TOI；2-TOT；3-非目标
+		u_char camp = 0;  //目标阵营，0-无效；1-敌方（FOE）；2-友方（Friend）；3-中立（Neutral）；4-不明（UNKWN）
+		u_char type = 0;  //目标类型，0-无效
+		u_char country = 0;  //目标归属国家地区
+		u_char lengthOfName = 0;  //目标名称长度
+		string name = "";  //目标名称
+
+		//这部分接口文件上没有，是后加的吗？？？
+		u_char coordinateSystem = 0;
+		float longtitude = 0;
+		float latitude = 0;
+		float altitude = 0;
+		u_char status = 0;  
+
+		u_char timeSensitive = 0;  //目标时敏特征，0-无效，1-非时敏目标，2-时敏目标
+		uint16_t effectiveStrikeTime = 0;  //目标有效打击时间
+		u_char mobility = 0;  //目标机动能力，0-无效，1-固定目标，2-机动目标
+		u_char dectectionMethod = 0;  //目标探测方式，0-无效，1-雷达探测，2-光电探测
+		float dectectionRange = 0;  //目标探测距离
+		float rangeOfHorizontalDetectionAngle = 0;  //目标水平探测角度范围
+		float rangeOfVerticalDetectionAngle = 0;  //目标垂直探测角度范围
+		float heightOfWeaponAttack = 0;  //目标武器攻击高度
+		float distanceOfWeaponAttack = 0;  //目标武器攻击距离
+		u_char ballisticTypeOfWeapon = 0;  //目标武器弹道类型，0-无效，1-直射，2-曲射
+		u_char characteristicsOfInfraredRadiation = 0;  //目标红外辐射特征，热辐射强度[暂赋值0]
+		int centerFrequencyOfElectromagneticRadiationcharacteristics = 0;  //目标电磁辐射特征-中心频率
+		int pulseWidthOfElectromagneticRadiationcharacteristics = 0;  //目标电磁辐射特征-脉宽
+		u_char agileModeOfElectromagneticRadiationcharacteristics = 0;  //目标电磁辐射特征-捷变模式，0-未定义，1-规律捷变，2-随机捷变，3-自适应捷变
+		u_char polarizationModeOfElectromagneticRadiationcharacteristics = 0;  //目标电磁辐射特征-极化方式，0-未定义，1-垂直极化，2-水平极化，3-斜极化，4-左旋极化，5-右旋极化
+		float length = 0;  //目标外形尺寸-长度
+		float width = 0;  //目标外形尺寸-宽度
+		float height = 0;  //目标外形尺寸-高度
+		u_char protectionCapability = 0;  //目标防护能力，0-无防护，1-装甲防护，2-混凝土掩体
+
+		MSGPACK_DEFINE(msgID, timestamp, targetID, targetSource, modify, modifySource, interestDegree, camp, type, country,
+			lengthOfName, name, coordinateSystem,longtitude,latitude,altitude,status,
+			timeSensitive,effectiveStrikeTime, mobility, dectectionMethod, dectectionRange, 
+			rangeOfHorizontalDetectionAngle,
+			rangeOfVerticalDetectionAngle, heightOfWeaponAttack, distanceOfWeaponAttack, ballisticTypeOfWeapon,
+			characteristicsOfInfraredRadiation, centerFrequencyOfElectromagneticRadiationcharacteristics,
+			pulseWidthOfElectromagneticRadiationcharacteristics, agileModeOfElectromagneticRadiationcharacteristics,
+			polarizationModeOfElectromagneticRadiationcharacteristics, length, width, height, protectionCapability);
+	};
+
+  // 任务状态
+  struct TaskStatus
+  {
+	uint16_t msgID = 0;  //0202
+	long timestamp = 0;
+	u_char lengthOfTaskID = 0;  //任务编号长度
+	string taskID = "";  //任务编号
+	u_char status = 0;  //任务状态，0-无效，1-进行中，2-暂停，3-终止，4-完成，5-失败
+
+	MSGPACK_DEFINE(msgID, timestamp, lengthOfTaskID, taskID, status);
+  };
+
+	// 航路点属性
+  struct PointAirRoute  // 20
+  {
+    double longtitude = 0;   //MSGPACK保留小数点后四位，精度不够，发送经纬度乘1000，接收除1000
+    double latitude = 0;  //MSGPACK保留小数点后四位，精度不够，发送经纬度乘1000，接收除1000
+    float altitude = 0;
+    long timestamp = 0;
+	unsigned char type = 0;  //0-一般，1-初始点，2-瞄准点，3-攻击点，4-退出点
+
+    MSGPACK_DEFINE(longtitude,latitude,altitude,timestamp,type);
+  };
+
+
+  struct CombatUnit
+  {
+	CombatUnit()
+	{
+		std::vector<PointAirRoute>().swap(wayPointVec);
+	}
+	unsigned int platformID = 0;  //Z单元编号，0-无效，100001~100099,200001~200099,300001~300099,400001~400099
+	unsigned int targetID = 0;  //Z单元打击的目标编号，目标编号/分配区域编号
+	unsigned char taskType = 0;  //Z单元任务类型，0-无效，1-侦察，2-打击
+	unsigned char proposalWeaponType = 0;  //Z单元规划武器类型，0-无效，1-小直径炸弹，2-激光制导炸弹，3-火箭弹
+	unsigned char proposalWeaponCount = 0;  //Z单元规划武器数量，0-无效，1~255   11
+	PointAirRoute launchPoint;  //Z单元武器瞄准点（经、纬、高、瞄准点时刻）  21
+	
+	//文件上有一个Z单元航路编号，程序中没有
+	unsigned char wayID = 0;         //航路编号,wangcong 20240901
+	unsigned char wayPointCount = 20;  // 确定航路点为20个，文件上没有要求 2
+	std::vector<PointAirRoute> wayPointVec;  //航路点 210
+
+	MSGPACK_DEFINE(platformID,targetID,taskType,proposalWeaponType,proposalWeaponCount,launchPoint,wayID,wayPointCount,wayPointVec);
+	
+  };
+
+  struct AllocationPlatformInfo // 5个字节
+  {
+	int platformID = 0;
+	unsigned char platformType = 0;
+
+	MSGPACK_DEFINE(platformID,platformType);
+  };
+
+  struct SubAreaAllocationInfo // 62个字节
+  {
+	SubAreaAllocationInfo()
+	{
+		std::vector<AllocationPlatformInfo>().swap(allocationPlatformInfoVec);
+	}
+	unsigned char lengthOfAreaID = 0;
+	string areaID = ""; // 定长为40个
+	unsigned char platformCount = 0; 
+	std::vector<AllocationPlatformInfo> allocationPlatformInfoVec; // 分配的平台数量定死为4个，没有填空的
+
+	MSGPACK_DEFINE(lengthOfAreaID,areaID,platformCount,allocationPlatformInfoVec);
+  };
+
+	// 任务方案
+  struct TaskProposal
+  {
+	uint16_t msgID = 0;
+	long timestamp = 0;
+	unsigned char phase = 0;  //Z阶段
+	unsigned char lengthOfTaskID = 0;  //任务编号长度
+	string taskID = "";  //任务编号
+	unsigned char taskType = 0;  //任务类型
+	int proposalID = 0;  //方案编号，0-无效, 1000~9999
+	unsigned char proposalCode = 0;  //方案序号，0-无效，1-方案一，2-方案二，3-方案三
+	unsigned char combatUnitCount = 0;  //杀伤链Z单元数量
+	std::vector<CombatUnit> combatUnitVec;
+
+	unsigned char lengthOfTaskAreaID = 0;
+	string taskAreaID = "";
+	unsigned char areaType = 0; // 0：未定义；1：任务区；2：禁飞区；3：威胁区
+	unsigned char subAreaCount = 0;
+	std::vector<SubAreaAllocationInfo> subAreaAllocationInfoVec;
+
+	MSGPACK_DEFINE(msgID,timestamp,phase,lengthOfTaskID,taskID,taskType,proposalID,proposalCode,combatUnitCount,combatUnitVec,
+					lengthOfTaskAreaID,taskAreaID,areaType,subAreaCount,subAreaAllocationInfoVec);
+
+  };
+
+  // 任务规划
+  struct TaskPlan
+  {
+	TaskPlan(){ 
+		std::vector<CombatUnit>().swap(combatUnitVec);
+	}
+	uint16_t msgID = 0;  //0201
+	long timestamp = 0;
+	u_char lengthOfTaskID = 0;  //任务编号长度
+	string taskID = "";  //任务编号
+	unsigned char combatUnitCount = 0;  //杀伤链Z单元数量
+	std::vector<CombatUnit> combatUnitVec;
+
+	MSGPACK_DEFINE(msgID, timestamp, lengthOfTaskID, taskID, combatUnitCount, combatUnitVec);
+  };
+
+  // 目标信息
+  struct TargetInfo
+  {
+    uint32_t targetID = 0;
+
+    MSGPACK_DEFINE(targetID);
+  };
+
+  // 任务指令
+  struct TaskInstruction
+  {
+    TaskInstruction()
+	{
+		std::vector<TargetInfo>().swap(targetInfoVec);
+	}
+	uint16_t msgID = 0;
+	long timestamp = 0;
+	u_char phase = 0;  //Z阶段，任务所属阶段的阶段标识：0-无效
+	u_char lengthOfTaskID = 0;  //任务编号长度
+	string taskID = "";  //任务编号，
+	u_char lengthOfAreaID = 0;  //任务区域编号长度
+	string areaID = "";  //任务区域编号，区域唯一标识
+	u_char lengthOfTaskName = 0;  //任务名称长度
+	string taskName = "";  //任务名称，上级下达任务时赋予的名称，可缺省
+	u_char taskType = 0;  //任务类型，0-无效，1-空中待命，2-区域瞰制，3-近距支援，4-火力打击，5-防空压制
+	u_char taskPurpose = 0;  //任务目的，0-无
+	u_char taskPriority = 0;  //任务优先级，任务执行的优先等级，数字越大优先级越高：0-无效，1~3-一般，4~6-优先，7~9-紧急
+	u_char instruction = 0;  //任务指令，0-无效，1-任务开始，2-任务终止，3-任务暂停
+	long startTime = 0;  //任务开始时间，1970年1月1日0:0:0开始计时的秒数
+	long endTime = 0;  //任务结束时间，1970年1月1日0:0:0开始计时的秒数
+	u_char targetCount = 0;  //目标数量，任务关联目标的数量
+	std::vector<TargetInfo> targetInfoVec;
+
+	MSGPACK_DEFINE(msgID, timestamp, phase, lengthOfTaskID, taskID, lengthOfAreaID, areaID, lengthOfTaskName, taskName, taskType, taskPurpose,
+		taskPriority, instruction, startTime, endTime, targetCount, targetInfoVec);
+
+  };
+
+	// 区域点属性
+	struct AreaPoint
+	{
+		AreaPoint(){}
+		AreaPoint(double x,double y):longtitude(x),latitude(y){}
+		//wangcong :由于msgpack打包float时只保留小数点后4位，精度损失较大，因此在发送时对经纬度*1000进行发送，接受时将经纬度除以1000
+		double longtitude = 0;  //经度  LSB = 1/1000;
+		double latitude = 0;  //纬度    LSB = 1/1000;
+
+		MSGPACK_DEFINE(longtitude,latitude);
+	};
+
+	// 区域属性
+	struct Area
+	{
+		Area()
+		{
+			std::vector<AreaPoint>().swap(areaPointVec);
+		}
+
+		u_char lengthOfAreaID = 0;  //区域编号长度
+		string areaID = "";  //区域编号
+		u_char lengthOfAreaName = 0;  //区域名称长度
+		string areaName = "";  //区域名称
+		u_char type = 0;  //区域类型，0：未定义；1：任务区；2：禁飞区；3：威胁区；
+		float topHight = 0;  //区域上高
+		float bottomHeight = 0;  //区域下高
+		u_char geometricType = 0;  //区域几何类型，0-无效，1-闭合，2-开放
+		u_char areaPointCount = 0;  //区域点集合点数量
+		std::vector<AreaPoint> areaPointVec;
+
+		MSGPACK_DEFINE(lengthOfAreaID, areaID, lengthOfAreaName, areaName, type, topHight,
+			bottomHeight, geometricType, areaPointCount, areaPointVec);
+	};
+
+	// 任务区域
+	struct TaskArea
+	{
+		TaskArea()
+		{
+			std::vector<Area>().swap(areaVec);
+		}
+
+		uint16_t msgID = 0;  //收0104、发0207
+		long timestamp = 0;
+		u_char areaCount = 0;  //任务区域数量，0：未定义，1~255
+		std::vector<Area> areaVec;
+
+		MSGPACK_DEFINE(msgID, timestamp, areaCount, areaVec);
+
+	};
+
+  	// 子区域属性
+	struct SubArea // 84字节
+	{
+		SubArea()
+		{
+			std::vector<AreaPoint>().swap(subAreaPointVec);
+		}
+		u_char lengthOfAreaID = 0;  //子区域编号长度
+		string subAreaID = ""; //子区域编号
+        u_char subAreaType = 0;  //改为子区域划分方式，0：未定义
+		float topHight = 0;  //子区域上高
+		float bottomHeight = 0;  //子区域下高
+    	u_char areaGeometryType = 0;  //子区域几何类型，0-无效，1-闭合，2-开放
+	  	u_char subAreaPointCount = 0;  //子区域点集合点数量
+		std::vector<AreaPoint> subAreaPointVec;
+
+		MSGPACK_DEFINE(lengthOfAreaID, subAreaID, subAreaType, topHight, bottomHeight, areaGeometryType, subAreaPointCount, subAreaPointVec);
+	};
+
+	struct TaskSubArea
+	{
+		TaskSubArea()
+		{
+			std::vector<SubArea>().swap(subAreaVec);
+		}
+
+		uint16_t msgID = 0;  //0209
+		long timestamp = 0;
+		u_char lengthOfAreaID = 0;  //任务区域编号长度
+		string areaID = "";  //任务区域编号
+		u_char lengthOfAreaName = 0;  //任务区域名称长度
+		string areaName = "";  //任务区域名称
+		u_char type = 0;  //任务区域类型，0：未定义；1：任务区；2：禁飞区；3：威胁区
+		u_char subAreaCount = 0;  //子区域数量
+		std::vector<SubArea> subAreaVec;
+	
+		MSGPACK_DEFINE(msgID, timestamp, lengthOfAreaID, areaID, lengthOfAreaName, areaName, type, subAreaCount, subAreaVec);
+	};
+
+	struct AreaDelete
+	{
+		uint16_t msgID = 1012; 
+		long timestamp = 0;
+		u_char lengthOfAreaID = 0;  //任务区域编号长度
+		string areaID = "";  //任务区域编号 40字节
+		u_char type = 0;  //0：未定义；1：任务区域，2：子区域，3：威胁区域
+		MSGPACK_DEFINE(msgID, timestamp, lengthOfAreaID, areaID, type);
+	};
+
+	// 水文气象
+	struct Hydrometeor
+	{
+		uint16_t msgID = 0;  //0105
+		long timestamp = 0;
+		u_char lengthOfAreaID = 0;  //任务区域编号长度
+		string areaID = "";  //任务区域编号，区域编号
+		u_char visibilityLevel = 0;  //能见度等级，能见度等级0~9，能见度低劣：0~2，能见度不良：3~4，能见度中等：5~6，能见度良好：7，能见度优良：8，能见度异常优良：9
+		u_char fogForcastLevel = 0;  //雾的预报等级，0-无效，1-轻雾，2-大雾，3-浓雾，4-强浓雾，5-特强浓雾
+		u_char precipitaionForcastLevel = 0;  //降水量等级，0-无效，1-微量降雨（零星小雨），2-小雨，3-中雨，4-大雨，5-暴雨，6-大暴雨，7特大暴雨
+		u_char snowForcastLevel = 0;  //降雪等级，0-无效，1-零星小雪，2-小雪，3-中雪，4-大雪，5-暴雪，6-特大暴雪
+
+		MSGPACK_DEFINE(msgID, timestamp, lengthOfAreaID, areaID, visibilityLevel,
+			fogForcastLevel, precipitaionForcastLevel, snowForcastLevel);
+	};
+
+	struct ThreatArea
+	{
+		ThreatArea()
+		{
+			std::vector<AreaPoint>().swap(areaPointVec);
+		}
+		uint16_t msgID = 0;  //0208
+		long timestamp = 0;
+		u_char lengthOfAreaID = 0;  //区域编号长度
+		string areaID = "";  //区域编号
+		u_char lengthOfAreaName = 0;  //区域名称长度
+		string areaName = "";  //区域名称
+		u_char type = 0;  //区域类型，0：未定义；1：任务区；2：禁飞区；3：威胁区
+		float topHight = 0;  //区域上高
+		float bottomHeight = 0;  //区域下高
+		u_char geometricType = 0;  //区域几何类型，0-无效，1-闭合，2-开放
+		u_char areaPointCount = 0;  //点集合点数量
+		std::vector<AreaPoint> areaPointVec;
+
+		MSGPACK_DEFINE(msgID, timestamp, lengthOfAreaID, areaID, lengthOfAreaName, areaName,
+			type, topHight, bottomHeight, geometricType, areaPointCount, areaPointVec);
+	};
+
+	struct Way
+	{
+		Way()
+		{
+			std::vector<PointAirRoute>().swap(wayPointVec);
+		}
+		uint16_t msgID = 0;
+		long timestamp = 0;
+		u_char taskIDLength = 0;
+		string taskID = "";
+		int platformID = 0;
+		int targetID = 0;
+		u_char wayID = 0;
+		u_char wayPointCount = 0;
+		std::vector<PointAirRoute> wayPointVec;
+
+		MSGPACK_DEFINE(msgID, timestamp, taskIDLength,taskID,platformID,targetID,wayID, wayPointCount, wayPointVec);
+	};
+
+
+	//目标结构体
+	struct StrickTarget
+	{
+		uint32_t     targetID = 0;  //目标编号
+		u_char       targetType = 0;  //目标类型，0-无效
+		u_char       characteristicsOfTimeSensitive = 0;  //目标时敏特征，0-无效，1-非时敏目标，2-时敏目标
+		uint16_t     effeciveStrickTime = 0;  //目标有效打击时间
+		u_char       mobilityTarget = 0;  //目标机动能力
+		u_char       characteristicsOfInfraredRadiation = 0;  //目标红外辐射特征
+		int          centerFrequencyOfElectromagneticRadiationcharacteristics = 0;  //目标电磁辐射特征-中心频率
+		int          pulseWidthOfElectromagneticRadiationcharacteristics = 0;  //目标电磁辐射特征-脉宽
+		u_char       agileModeOfElectromagneticRadiationcharacteristics = 0;  //目标电磁辐射特征-捷变模式，0-未定义，1-规律捷变，2-随机捷变，3-自适应捷变
+		u_char       polarizationModeOfElectromagneticRadiationcharacteristics = 0;  //目标电磁辐射特征-极化方式，0-未定义，1-垂直极化，2-水平极化，3-斜极化，4-左旋极化，5-右旋极化
+		float        length = 0;  //目标外形尺寸，长度，m
+		float        width = 0;  //目标外形尺寸，宽度，m
+		float        height = 0;  //目标外形尺寸，高度，m
+		u_char       protectionCapability = 0;  //目标防护能力，0-无防护，1-装甲防护，2-混凝土掩体
+		double       longtitude = 0;  //目标经度     //MSGPACK保留小数点后四位，精度不够，发送经纬度乘1000，接收除1000
+		double       latitude = 0;  //目标纬度     //MSGPACK保留小数点后四位，精度不够，发送经纬度乘1000，接收除1000
+		float        altitude = 0;  //目标高度
+
+		MSGPACK_DEFINE(targetID,targetType,characteristicsOfTimeSensitive,effeciveStrickTime,mobilityTarget,
+						characteristicsOfInfraredRadiation,centerFrequencyOfElectromagneticRadiationcharacteristics,
+						pulseWidthOfElectromagneticRadiationcharacteristics,agileModeOfElectromagneticRadiationcharacteristics,
+						polarizationModeOfElectromagneticRadiationcharacteristics,length,width,height,protectionCapability,
+						longtitude,latitude,altitude);
+	};
+
+	//待命指令 返航指令
+	struct AwaitCmd
+	{
+		uint16_t msgID = 0;  //仿真激励:0407待命，0408返航；给协同单元：0810待命、0811代表返航
+		long timestamp = 0;
+		int32_t platformID = 0;  //无人机编号，0-无效，100001~100099,200001~200099,300001~300099,400001~400099
+		double awaitLongitude = 0;  //无人机待命点经度      //MSGPACK保留小数点后四位，精度不够，发送经纬度乘1000，接收除1000
+		double awaitLatitude  = 0;  //无人机待命点纬度     //MSGPACK保留小数点后四位，精度不够，发送经纬度乘1000，接收除1000
+		float awaitAltitude  = 0;  //无人机待命点高度
+		long startTime = 0; //开始时间
+
+		MSGPACK_DEFINE(msgID, timestamp, platformID, awaitLongitude, awaitLatitude, awaitAltitude, startTime);
+	};
+
+	//打击指令
+	struct StrikePlan
+	{
+		StrikePlan()
+		{
+			std::vector<StrickTarget>().swap(strickTargetVec);
+			std::vector<AreaPoint>().swap(areaPointVec);
+		}
+		uint16_t msgID = 0;  //0805
+		long timestamp = 0;
+		unsigned char lengthOfTaskID = 0;  //任务编号长度
+		string taskID = "";  //任务编号
+		unsigned char lengthOftaskAreaID = 0;  //任务区域编号长度
+		string taskAreaID = "";  //任务区域编号
+
+		//这部分文件中没有
+		unsigned char areaPointCount = 0;
+		std::vector<AreaPoint> areaPointVec;
+
+		u_char taskpriority = 0;  //任务优先级，任务执行的优先等级，数字越大优先级越高：0-无效，1~3-一般，4~6-优先，7~9-紧急
+		u_char taskInstruct = 0;  //任务指令，0-无效，1-任务开始，2-任务终止，3-任务暂停
+		long taskStartTime = 0;  //任务开始时间
+		long taskEndTime = 0;  //任务结束时间
+
+		uint32_t fightUnitID = 0;  //Z单元编号，0-无效，100001~100099,200001~200099,300001~300099,400001~400099
+		u_char taskType = 0;  //Z单元任务类型，0-无效，1-侦察，2-打击
+		u_char weaponType= 0;  //Z单元规划武器类型，0-无效，1-小直径炸弹，2-激光制导炸弹，3-火箭弹
+
+		//Z单元规划武器数量，0-无效，1~255，文件中有，程序中没有
+
+		double weaponLongitude = 0;  //单元武器瞄准点经度       //MSGPACK保留小数点后四位，精度不够，发送经纬度乘1000，接收除1000
+		double weaponLatitude  = 0;  //单元武器瞄准点纬度     //MSGPACK保留小数点后四位，精度不够，发送经纬度乘1000，接收除1000
+		float weaponAltitude  = 0;  //单元武器瞄准点高度
+		long weaponFireTime  = 0;  //单元武器瞄准点时刻
+		u_char sonTaskType  = 0;  //打击类型，0-无效
+		u_char targetCount = 0;  //目标数量，任务关联目标的数量
+		std::vector<StrickTarget> strickTargetVec;
+
+		MSGPACK_DEFINE(msgID, timestamp, lengthOfTaskID, taskID, lengthOftaskAreaID,taskAreaID, areaPointCount,areaPointVec,taskpriority, 
+			taskInstruct, taskStartTime, taskEndTime,
+			fightUnitID, taskType, weaponType, weaponLongitude, weaponLatitude, weaponAltitude, weaponFireTime, sonTaskType,
+			targetCount, strickTargetVec);
+	};
+
+	//侦察指令
+	struct PatrolPlan
+	{
+		PatrolPlan()
+		{
+			std::vector<AreaPoint>().swap(areapointVec);
+		}
+		uint16_t msgID = 0;
+		long timestamp = 0;
+		u_char lengthOfTaskID = 0;
+		string taskID = "";
+		u_char lengthOfTaskAreaID = 0;
+		string taskAreaID = "";
+		unsigned char areaPointCount = 0;
+		std::vector<AreaPoint> areapointVec;
+		u_char taskpriority = 0;
+		u_char taskInstruct = 0;
+		long taskStartTime = 0;
+		long taskEndTime = 0;
+		unsigned int platformID = 0;
+
+		MSGPACK_DEFINE(msgID,timestamp,lengthOfTaskID,taskID,lengthOfTaskAreaID,taskAreaID,areaPointCount,areapointVec,
+						taskpriority,taskInstruct,taskStartTime,taskEndTime,platformID);
+	};
+
+	// 目标变更
+  struct TargetModify
+  {
+    uint16_t msgID = 0;
+    long timestamp = 0;
+    uint32_t targetID = 0;
+    u_char modify = 0;
+	u_char modifySource = 0;      // 变更来源
+    u_char interestDegree = 0;
+    u_char status = 0;
+    u_char type = 0;
+  };
+
+	//任务决策
+  struct TaskDecision
+  {
+    uint16_t msgID = 0;
+    long timestamp = 0;
+	unsigned int proposalID = 0;
+    unsigned char proposalCode = 0;
+    unsigned char instruction = 0;
+  };
+
+  struct PlatformControl
+  {
+	uint16_t msgID = 0;
+	long timestamp = 0;
+
+	MSGPACK_DEFINE(msgID,timestamp);
+  };
+
+
+  struct SensorControl
+  {
+	uint16_t msgID = 0;
+	long timestamp = 0;
+	unsigned char open = 0;
+	unsigned char manualSearch = 0;
+	short elevation = 0;
+	short direction = 0;
+	unsigned char videoSwitch = 0;
+	unsigned char identificationSwitch = 0;
+
+	MSGPACK_DEFINE(msgID,timestamp,open,manualSearch,elevation,direction,videoSwitch,identificationSwitch);
+  };
+
+  struct WeaponControl
+  {
+	uint16_t msgID = 0;
+	long timestamp = 0;
+	unsigned char controlTarget = 0;
+	unsigned char motorID = 0;
+	unsigned char motorControl = 0;
+
+	MSGPACK_DEFINE(msgID,timestamp,controlTarget,motorID,motorControl);
+
+  };
+
+  //增加平板给管理的数据请求消息
+  struct PadDataRequest
+  {
+	uint16_t msgID = 0;  //消息标识0906
+	long timestamp = 0;
+	char dataRequest = 0; //0-请求全部事件消息，其他-请求对应标识消息
+
+	MSGPACK_DEFINE(msgID,timestamp,dataRequest);
+  };
+
+  //待定
+  struct FireRequest
+  {
+	uint16_t msgID = 0;
+	long timestamp = 0;
+
+	MSGPACK_DEFINE(msgID,timestamp);
+  };
+
+// 目标图像信息
+  struct TargetImg
+  {
+	uint16_t msgID = 0;  //0710
+	long timestamp = 0;
+	unsigned int TargetID;
+	unsigned int ImgSize;
+	string imgdata;
+	MSGPACK_DEFINE(msgID,timestamp,TargetID,ImgSize,imgdata);
+  };
+
+//CAS请求指令 msgid=1301
+  struct CasRequest
+  {
+	uint16_t msgID = 0;  
+	long timestamp = 0;
+	unsigned char type;
+	int tgt_lon_du;   //目标经度 度分秒
+	int tgt_lon_fen;
+	int tgt_lon_miao;
+	int tgt_lat_du;  //目标度 度分秒
+	int tgt_lat_fen;
+	int tgt_lat_miao;
+	int tgt_alt;
+	unsigned char weapon_type;
+	unsigned char weapon_count;
+	int cp_lon_du;   //cp经度 度分秒
+	int cp_lon_fen;
+	int cp_lon_miao;
+	int cp_lat_du;  //co纬度 度分秒
+	int cp_lat_fen;
+	int cp_lat_miao;
+	int cp_alt;
+	unsigned char guide_type;  //0-无引导，1-一类引导，2-二类引导，3-三类引导
+	unsigned char free_report_length; //自由报文长度
+	string free_report;     //自由报文 80字节
+  };
+
+	//CAS请求指令 msgid=1301
+  struct CasRequestTo28
+  {
+	uint16_t msgID = 0;  
+	long timestamp = 0;
+	unsigned char type;
+	float tgt_lon;
+	float tgt_lat;
+	float tgt_alt;
+	unsigned char weapon_type;
+	unsigned char weapon_count;
+	float cp_lon;
+	float cp_lat;
+	float cp_alt;
+	unsigned char guide_type;  //0-无引导，1-一类引导，2-二类引导，3-三类引导
+	unsigned char free_report_length; //自由报文长度
+	string free_report;     //自由报文 80字节
+	MSGPACK_DEFINE(msgID,timestamp,type,tgt_lon,tgt_lat,tgt_alt,weapon_type,weapon_count,cp_lon,cp_lat,cp_alt,guide_type,free_report_length,free_report);
+  };
+
+  //直升机位置 msgid=1302
+  struct CasHelicopterLocation
+  {
+	uint16_t msgID = 0;  
+	long timestamp = 0;
+	float platform_lon = 0;
+	float platform_lat = 0;
+	float platform_alt = 0;
+	MSGPACK_DEFINE(msgID,timestamp,platform_lon,platform_lat,platform_alt);
+  };
+
+  //九行简报 msgid=1303
+  struct CasNineLineReport
+  {
+	uint16_t msgID = 0;  
+	long timestamp = 0;
+	float ip_lon;
+	float ip_lat;
+	float ip_alt;
+	float tgt_relative_magnetic_heading;//目标相对IP点磁航向
+	char bias; //偏置 0-无效，1-偏左，2-偏右
+	float ip_to_tgt_dis; //IP点到目标距离 海里
+	float tgt_alt;  //目标高度
+	char tgt_info_length;  //目标描述长度
+	string tgt_info;    //目标描述 40字节
+	float tgt_lon; 
+	float tgt_lat;
+	char guide_type; //末端制导方式 0-无引导，1-烟雾，2-激光，3-红外
+	unsigned int laser_code;  //激光编码
+	float tgt_to_nearest_friend_dis; //目标到最近友方单位距离
+	char tgt_to_nearest_friend_yaw; //目标到最近友方单位航向 0-无效，1-北，2-东北，3-东，4-东南，5-南，6-西南，7-西，8-西北
+	float ep_lon;
+	float ep_lat;
+	float ep_alt;
+
+	MSGPACK_DEFINE(msgID,timestamp,ip_lon,ip_lat,ip_alt,tgt_relative_magnetic_heading,bias,ip_to_tgt_dis,tgt_alt,tgt_info_length,
+	tgt_info,tgt_lon,tgt_lat,guide_type,laser_code,tgt_to_nearest_friend_dis,tgt_to_nearest_friend_yaw,ep_lon,ep_lat,ep_alt);
+  };
+
+  //cas航路信息 msgid=1304
+  struct CasWayInfo
+  {
+	uint16_t msgID = 0;  
+	long timestamp = 0;
+	float cp_lon;
+	float cp_lat;
+	float cp_alt;
+	float ip_lon;
+	float ip_lat;
+	float ip_alt;
+	float tgt_lon;
+	float tgt_lat;
+	float tgt_alt;
+	float ep_lon;
+	float ep_lat;
+	float ep_alt;
+
+	MSGPACK_DEFINE(msgID,timestamp,cp_lon,cp_lat,cp_alt,ip_lon,ip_lat,ip_alt,tgt_lon,tgt_lat,tgt_alt,ep_lon,ep_lat,ep_alt);
+  };
+
+} // namespace BMS
+
+#endif
